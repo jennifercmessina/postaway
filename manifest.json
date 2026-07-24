@@ -1,0 +1,24 @@
+{
+  "name": "PostAway",
+  "short_name": "PostAway",
+  "description": "AI Social Media Scheduler",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFCFE",
+  "theme_color": "#7C3FCC",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "postaway-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "postaway-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
