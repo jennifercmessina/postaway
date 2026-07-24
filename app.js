@@ -40,11 +40,11 @@ const TAGS = [
 ];
 
 const DEFAULT_CAPTIONS = [
-  "Elevate your routine with the look that turns heads. Every detail is designed for the woman who demands more. Link in bio. ✨",
-  "Luxury is not just a price point, it is a feeling. Wear it. Own it. Link in bio. 💎",
-  "Your glow era starts here. Premium beauty, effortless results. Link in bio. ✨",
-  "The secret to looking this good? We will let the results speak for themselves. Link in bio. 💫",
-  "Crafted for women who know exactly what they want. Link in bio. 💎"
+  "Elevate your routine with the look that turns heads. Every detail is designed for the woman who demands more. Link in bio. â¨",
+  "Luxury is not just a price point, it is a feeling. Wear it. Own it. Link in bio. ð",
+  "Your glow era starts here. Premium beauty, effortless results. Link in bio. â¨",
+  "The secret to looking this good? We will let the results speak for themselves. Link in bio. ð«",
+  "Crafted for women who know exactly what they want. Link in bio. ð"
 ];
 
 // App state
@@ -222,7 +222,7 @@ async function loadDashboard() {
   if (scheduled.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
-        <div class="big">✦</div>
+        <div class="big">â¦</div>
         <p>No posts scheduled yet.<br>Tap Schedule to get started.</p>
         <button class="btn btn-gold" style="width:auto;padding:12px 24px" onclick="switchTab('schedule')">Schedule Posts</button>
       </div>`;
@@ -234,7 +234,7 @@ async function loadDashboard() {
     const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
     return `<div class="post-card">
-      <div class="post-thumb">${p.image_url ? `<img src="${p.image_url}" loading="lazy">` : '🖼'}</div>
+      <div class="post-thumb">${p.image_url ? `<img src="${p.image_url}" loading="lazy">` : 'ð¼'}</div>
       <div class="post-info">
         <div class="post-caption">${p.content || ''}</div>
         <div class="post-meta">${date} at ${time}</div>
@@ -262,7 +262,7 @@ async function loadSchedPostsList() {
       const date = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       return `<div class="post-card" style="margin-bottom:8px">
-        <div class="post-thumb">${p.image_url ? `<img src="${p.image_url}" loading="lazy">` : '<div style="width:100%;height:100%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px">📷</div>'}</div>
+        <div class="post-thumb">${p.image_url ? `<img src="${p.image_url}" loading="lazy">` : '<div style="width:100%;height:100%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px">ð·</div>'}</div>
         <div class="post-info">
           <div class="post-caption">${p.content ? p.content.slice(0, 60) + (p.content.length > 60 ? '...' : '') : 'No caption'}</div>
           <div class="post-meta">${date} at ${time}</div>
@@ -302,8 +302,8 @@ function renderMediaTab() {
   grid.innerHTML = mediaLibrary.map(m => `
     <div class="media-thumb">
       <img src="${m.thumbnailUrl}" loading="lazy">
-      ${m.fileType === 'video' ? '<div class="media-type-badge">▶ Video</div>' : ''}
-      <button class="media-del" onclick="deleteMediaItem('${m.id}')">✕</button>
+      ${m.fileType === 'video' ? '<div class="media-type-badge">â¶ Video</div>' : ''}
+      <button class="media-del" onclick="deleteMediaItem('${m.id}')">â</button>
     </div>
   `).join('');
 }
@@ -322,8 +322,8 @@ function renderSchedLibrary() {
     <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--card2);cursor:pointer;border:2px solid transparent;transition:border-color 0.2s"
          id="lib-item-${m.id}" onclick="toggleLibrarySelect('${m.id}', '${m.url}', '${m.thumbnailUrl}', '${m.fileType}')">
       <img src="${m.thumbnailUrl}" style="width:100%;height:100%;object-fit:cover" loading="lazy">
-      ${m.fileType === 'video' ? '<div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.65);border-radius:4px;font-size:10px;padding:2px 5px;color:#fff">▶</div>' : ''}
-      <div id="lib-check-${m.id}" style="display:none;position:absolute;inset:0;background:rgba(124,63,204,0.25);align-items:center;justify-content:center;font-size:24px">✓</div>
+      ${m.fileType === 'video' ? '<div style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.65);border-radius:4px;font-size:10px;padding:2px 5px;color:#fff">â¶</div>' : ''}
+      <div id="lib-check-${m.id}" style="display:none;position:absolute;inset:0;background:rgba(124,63,204,0.25);align-items:center;justify-content:center;font-size:24px">â</div>
     </div>
   `).join('');
 }
@@ -500,7 +500,7 @@ function renderPhotoGrid() {
   grid.innerHTML = photos.map((p, i) => `
     <div class="photo-item">
       <img src="${p.url}" loading="lazy">
-      <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
+      <button class="photo-remove" onclick="removePhoto(${i})">â</button>
       <div class="photo-ai-badge">AI</div>
     </div>`).join('');
   document.getElementById('step0-next').style.display = 'block';
@@ -978,6 +978,7 @@ function renderConnectedAccounts() {
   const ttStatusEl = document.getElementById('tt-status-label');
   const ttBtnEl = document.getElementById('tt-connect-btn');
   const banner = document.getElementById('ig-banner');
+  const ttBanner = document.getElementById('tt-banner');
   const queueNotice = document.getElementById('queue-notice');
 
   if (igConnected) {
@@ -991,6 +992,9 @@ function renderConnectedAccounts() {
   if (ttConnected) {
     if (ttStatusEl) { ttStatusEl.textContent = '@' + (ttUsername || 'connected'); ttStatusEl.style.color = 'var(--success)'; }
     if (ttBtnEl) { ttBtnEl.textContent = 'Reconnect'; }
+    if (ttBanner) ttBanner.style.display = 'none';
+  } else {
+    if (ttBanner) ttBanner.style.display = '';
   }
 
   if (queueNotice) {
