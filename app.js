@@ -6,7 +6,6 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // ============================================================
 
 // Cookie storage so OAuth sessions work in iOS standalone PWA mode
-// (iOS Safari and WKWebView share cookies but NOT localStorage)
 const cookieStorage = {
   getItem(key) {
     const match = document.cookie.split('; ').find(r => r.startsWith(key + '='));
@@ -30,7 +29,6 @@ const sb = supabase.createClient(SB_URL, SB_KEY, {
   }
 });
 
-// Trending 2026 hashtag sets (5 per post - Instagram cap)
 const TAGS = [
   '#MessinaGlam #GlazedDonutSkin #SoftGlam #LuxuryBeauty #GlowySkin',
   '#MessinaGlam #GlassSkin #CleanGirlAesthetic #LuxuryBeauty #SoftGlam',
@@ -47,6 +45,13 @@ const DEFAULT_CAPTIONS = [
   "Crafted for women who know exactly what they want. Link in bio. 💎"
 ];
 
+// ---- PLAN LIMITS ----
+const PLAN_LIMITS = {
+  free:    { maxPosts: 10,       label: 'Free Plan', canUseTikTok: false, canUseBoth: false },
+  starter: { maxPosts: Infinity, label: 'Starter',   canUseTikTok: true,  canUseBoth: false },
+  pro:     { maxPosts: Infinity, label: 'Pro',        canUseTikTok: true,  canUseBoth: true  }
+};
+
 // App state
 let user = null;
 let pendingNewUserOnboard = false;
@@ -56,7 +61,9 @@ let previewSlots = [];
 let randPhotos = [];
 let randOrder = [];
 let imgCache = new Map();
-let mediaLibrary = []; // { id, url, thumbnailUrl, fileType, fileName }
+let mediaLibrary = [];
+let userPlan = 'free';
+let userSubscription = null;
 
 // ---- SCREENS ----
 function showScreen(id) {
@@ -98,7 +105,6 @@ async function doSignup() {
   if (pass.length < 8) { toast('Password must be 8+ characters', 'error'); return; }
   const btn = document.getElementById('signup-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
-  // Set flag BEFORE the async call so auth listener fires with correct state
   pendingNewUserOnboard = true;
   localStorage.removeItem('postaway_onboarded');
   const { data, error } = await sb.auth.signUp({
@@ -165,7 +171,7 @@ function finishOnboarding() {
 
 // ---- INIT APP ----
 async function initApp(isNewUser = false) {
-  pendingNewUserOnboard = false; // Clear regardless of how initApp was triggered
+  pendingNewUserOnboard = false;
   const onboarded = localStorage.getItem('postaway_onboarded');
   if (!onboarded || isNewUser) {
     showScreen('screen-onboarding');
@@ -187,20 +193,14 @@ async function initApp(isNewUser = false) {
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   document.getElementById('greeting-name').textContent = greet + ', ' + name.split(' ')[0];
 
-  // Restore saved AI provider + key
   const savedProvider = localStorage.getItem('pf_ai_provider') || 'claude';
   setAIProvider(savedProvider);
 
-  // Load media library
   loadMediaLibrary();
-
-  // Handle return from OAuth (Instagram, etc.)
   handleOAuthReturn();
-
-  // Render connected account statuses
   renderConnectedAccounts();
-
   await loadDashboard();
+  await loadSubscription();
 }
 
 // ---- DASHBOARD ----
@@ -433,6 +433,9 @@ async function deleteMediaItem(id) {
 
 // ---- PLATFORM ----
 function setPlatform(p) {
+  const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
+  if (p === 'tiktok' && !limits.canUseTikTok) { showUpgradePrompt('tiktok'); return; }
+  if (p === 'both'   && !limits.canUseBoth)   { showUpgradePrompt('both');   return; }
   schedCfg.platform = p;
   document.querySelectorAll('.platform-pill').forEach(el => el.classList.toggle('active', el.dataset.platform === p));
 }
@@ -489,7 +492,6 @@ function addFiles(files) {
     photos.push({ file: f, url, caption: DEFAULT_CAPTIONS[photos.length % DEFAULT_CAPTIONS.length], hashtags: TAGS[photos.length % TAGS.length] });
   }
   renderPhotoGrid();
-  // Also add to media library in background
   if (files.length > 0) addToMediaLibrary(Array.from(files)).catch(() => {});
 }
 
@@ -566,7 +568,6 @@ function setAIProvider(provider) {
   const profileInput = document.getElementById('profile-api-key');
   if (keyInput) keyInput.placeholder = cfg.placeholder;
   if (profileInput) profileInput.placeholder = cfg.profilePlaceholder;
-  // Restore saved key for this provider
   const saved = localStorage.getItem('pf_api_key_' + provider) || '';
   if (keyInput) keyInput.value = saved;
   if (profileInput) profileInput.value = saved;
@@ -762,7 +763,17 @@ async function scheduleAll() {
   const btn = document.getElementById('confirm-btn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Scheduling...';
 
-  // Upload images in parallel with 10s timeout per image
+  // Free plan post limit check
+  if (userPlan === 'free') {
+    const { count } = await sb.from('posts').select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id).eq('status', 'scheduled');
+    if (((count || 0) + previewSlots.length) > PLAN_LIMITS.free.maxPosts) {
+      btn.disabled = false; btn.textContent = 'Schedule All Posts';
+      showUpgradePrompt('posts');
+      return;
+    }
+  }
+
   const uploadOne = async (p) => {
     if (!p.url.startsWith('blob:') || p.uploadedUrl) return;
     try {
@@ -779,7 +790,6 @@ async function scheduleAll() {
   };
   await Promise.all(photos.map(uploadOne));
 
-  // Insert rows
   const rows = previewSlots.map(s => ({
     image_url:    s.photo.uploadedUrl || s.photo.url,
     content:      (s.photo.caption || '') + '\n\n' + (s.photo.hashtags || ''),
@@ -796,7 +806,6 @@ async function scheduleAll() {
 
   toast(rows.length + ' posts scheduled!', 'success');
 
-  // Reset
   photos = [];
   imgCache.clear();
   previewSlots = [];
@@ -846,7 +855,6 @@ function runRandomizer() {
 
   let ticks = 0;
   const interval = setInterval(() => {
-    // Shuffle display
     const shuffled = [...randFiles].sort(() => Math.random() - 0.5);
     slots.forEach((slot, i) => {
       if (shuffled[i]) {
@@ -860,7 +868,6 @@ function runRandomizer() {
     if (ticks >= 12) {
       clearInterval(interval);
       slots.forEach(s => s.classList.remove('spinning'));
-      // Final order
       randOrder = [...randFiles].sort(() => Math.random() - 0.5);
       slots.forEach((slot, i) => {
         slot.innerHTML = '';
@@ -895,20 +902,14 @@ function sendRandToScheduler() {
   toast('Photos loaded in Schedule tab', 'success');
 }
 
-// ---- GOOGLE LOGIN ----
+// ---- GOOGLE / APPLE LOGIN ----
 async function doGoogleLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: 'https://getpostaway.com' }
-  });
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://getpostaway.com' } });
   if (error) toast(error.message, 'error');
 }
 
 async function doAppleLogin() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'apple',
-    options: { redirectTo: 'https://getpostaway.com' }
-  });
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://getpostaway.com' } });
   if (error) toast(error.message, 'error');
 }
 
@@ -921,6 +922,7 @@ function connectInstagram() {
   const url = `https://www.facebook.com/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&state=${user.id}`;
   window.location.href = url;
 }
+
 function connectTikTok() {
   if (!user) { toast('Please sign in first', 'error'); return; }
   const CLIENT_KEY = 'awhyljrxgkpuyg5r';
@@ -1014,6 +1016,78 @@ function saveApiKey() {
   toast('API key saved', 'success');
 }
 
+// ---- SUBSCRIPTION ----
+async function loadSubscription() {
+  try {
+    const { data } = await sb.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle();
+    if (data && data.status !== 'cancelled') {
+      userSubscription = data;
+      userPlan = data.plan || 'free';
+    } else {
+      userPlan = 'free';
+      userSubscription = null;
+    }
+  } catch (_) {
+    userPlan = 'free';
+  }
+  updatePlanUI();
+}
+
+function updatePlanUI() {
+  const label = PLAN_LIMITS[userPlan]?.label || 'Free Plan';
+  const badge = document.getElementById('plan-badge');
+  const planVal = document.getElementById('profile-plan-val');
+  if (badge) badge.textContent = label;
+  if (planVal) planVal.textContent = label;
+  const upgradeSection = document.getElementById('upgrade-section');
+  if (upgradeSection) upgradeSection.style.display = userPlan === 'pro' ? 'none' : 'block';
+}
+
+async function startCheckout(priceId) {
+  if (!user) return;
+  const btns = document.querySelectorAll('[data-price="' + priceId + '"]');
+  btns.forEach(b => { b.disabled = true; b.innerHTML = '<span class="spinner"></span>'; });
+  try {
+    const res = await fetch('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/stripe-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ price_id: priceId, user_id: user.id, email: user.email })
+    });
+    const json = await res.json();
+    if (json.error) {
+      toast(json.error, 'error');
+      btns.forEach(b => { b.disabled = false; b.textContent = 'Start Free Trial'; });
+      return;
+    }
+    window.location.href = json.url;
+  } catch (e) {
+    toast('Checkout failed: ' + e.message, 'error');
+    btns.forEach(b => { b.disabled = false; b.textContent = 'Start Free Trial'; });
+  }
+}
+
+function showUpgradePrompt(reason) {
+  const msgs = {
+    posts:  'You have reached the 10 post limit on the Free plan. Upgrade to Starter for unlimited scheduling.',
+    tiktok: 'TikTok scheduling requires a Starter or Pro plan.',
+    both:   'Posting to both platforms at once requires a Pro plan.'
+  };
+  const modal = document.getElementById('upgrade-modal');
+  const msgEl = document.getElementById('upgrade-modal-msg');
+  if (modal) {
+    if (msgEl) msgEl.textContent = msgs[reason] || 'Upgrade to unlock this feature.';
+    modal.style.display = 'flex';
+  } else {
+    toast((msgs[reason] || 'Upgrade to unlock this feature.') + ' Go to Profile to upgrade.', 'error');
+    switchTab('profile');
+  }
+}
+
+function closeUpgradeModal() {
+  const modal = document.getElementById('upgrade-modal');
+  if (modal) modal.style.display = 'none';
+}
+
 // ---- SESSION RESTORE ----
 async function init() {
   const { data } = await sb.auth.getSession();
@@ -1041,296 +1115,3 @@ async function init() {
 }
 
 init();
-
-// ============================================================
-// STRIPE SUBSCRIPTION SYSTEM
-// ============================================================
-
-const STRIPE_PK = 'pk_live_51S0D0bBDiYRcrvlHMXpuZu5DDy3YKvnt5E8wToeQiqxOUIpZ6RmEPbjObOpjQiTsqrGUCImlF14KrQvrjCZEi7AT001FBJtfTM';
-const STRIPE_PRICES = {
-  starter_monthly: 'price_1TxGT0BDiYRcrvlHpnE3PBHF',
-  starter_annual:  'price_1TxGUjBDiYRcrvlHRQNDfZZN',
-  pro_monthly:     'price_1TxGVZBDiYRcrvlHpUEIgEfR',
-  pro_annual:      'price_1TxGWSBDiYRcrvlHZKj1VloK',
-};
-
-// Plan limits
-const PLAN_LIMITS = {
-  free:    { posts: 10, drafts: 10, platforms: 0, analytics: false },
-  starter: { posts: Infinity, drafts: Infinity, platforms: 1, analytics: true },
-  pro:     { posts: Infinity, drafts: Infinity, platforms: 2, analytics: true },
-};
-
-let _currentPlan = 'free';
-let _planLoaded = false;
-
-// Load plan from Supabase
-async function loadUserPlan() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { _currentPlan = 'free'; _planLoaded = true; return 'free'; }
-
-    const { data, error } = await sb
-      .from('subscriptions')
-      .select('plan, status, current_period_end')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error || !data) { _currentPlan = 'free'; _planLoaded = true; return 'free'; }
-
-    const isActive = data.status === 'active' || data.status === 'trialing';
-    const notExpired = !data.current_period_end || new Date(data.current_period_end * 1000) > new Date();
-    _currentPlan = (isActive && notExpired) ? (data.plan || 'free') : 'free';
-    _planLoaded = true;
-    return _currentPlan;
-  } catch(e) {
-    _currentPlan = 'free';
-    _planLoaded = true;
-    return 'free';
-  }
-}
-
-function getCurrentPlan() { return _currentPlan; }
-function getPlanLimits() { return PLAN_LIMITS[_currentPlan] || PLAN_LIMITS.free; }
-
-// Gate check - returns true if action is allowed
-function canDoAction(action, currentCount) {
-  const limits = getPlanLimits();
-  if (action === 'schedule_post') return currentCount < limits.posts;
-  if (action === 'save_draft') return currentCount < limits.drafts;
-  if (action === 'connect_platform') return currentCount < limits.platforms;
-  if (action === 'view_analytics') return limits.analytics;
-  return true;
-}
-
-// Show upgrade prompt
-function showUpgradePrompt(reason) {
-  const messages = {
-    schedule_post: 'You have reached your 10 post/month limit on the Free plan.',
-    save_draft: 'You have reached your 10 draft limit on the Free plan.',
-    connect_platform: _currentPlan === 'starter'
-      ? 'Pro plan lets you connect both Instagram and TikTok.'
-      : 'Upgrade to connect social platforms.',
-    view_analytics: 'Analytics are available on Starter and Pro plans.',
-  };
-  const msg = messages[reason] || 'Upgrade your plan to unlock this feature.';
-  showPricingModal(msg);
-}
-
-// ============================================================
-// PRICING MODAL
-// ============================================================
-
-let _pricingBillingAnnual = false;
-
-function showPricingModal(headerMsg) {
-  if (document.getElementById('pricing-modal')) return;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'pricing-modal';
-  overlay.innerHTML = `
-    <div class="pm-backdrop" onclick="closePricingModal()"></div>
-    <div class="pm-sheet">
-      <button class="pm-close" onclick="closePricingModal()">&#x2715;</button>
-      ${headerMsg ? `<div class="pm-alert">${headerMsg}</div>` : ''}
-      <h2 class="pm-title">Choose your plan</h2>
-
-      <div class="pm-billing-toggle">
-        <span class="pm-toggle-label" id="pm-monthly-label" style="font-weight:700">Monthly</span>
-        <label class="pm-switch">
-          <input type="checkbox" id="pm-annual-toggle" onchange="toggleBilling(this.checked)">
-          <span class="pm-slider"></span>
-        </label>
-        <span class="pm-toggle-label" id="pm-annual-label">Annual <span class="pm-save-badge">Save 33%</span></span>
-      </div>
-
-      <div class="pm-cards">
-
-        <!-- FREE -->
-        <div class="pm-card ${_currentPlan === 'free' ? 'pm-current' : ''}">
-          <div class="pm-card-header">
-            <div class="pm-plan-name">Free</div>
-            <div class="pm-price-wrap"><span class="pm-price">$0</span><span class="pm-per">/mo</span></div>
-          </div>
-          <ul class="pm-features">
-            <li>10 scheduled posts/month</li>
-            <li>10 drafts</li>
-            <li>1 platform (Instagram or TikTok)</li>
-          </ul>
-          ${_currentPlan === 'free' ? '<div class="pm-current-badge">Current plan</div>' : ''}
-        </div>
-
-        <!-- STARTER -->
-        <div class="pm-card pm-popular ${_currentPlan === 'starter' ? 'pm-current' : ''}">
-          <div class="pm-popular-badge">Most popular</div>
-          <div class="pm-card-header">
-            <div class="pm-plan-name">Starter</div>
-            <div class="pm-price-wrap">
-              <span class="pm-price" id="pm-starter-price">$12</span>
-              <span class="pm-per">/mo</span>
-            </div>
-            <div class="pm-billed-note" id="pm-starter-note"></div>
-          </div>
-          <ul class="pm-features">
-            <li>Unlimited posts</li>
-            <li>Unlimited drafts</li>
-            <li>1 platform (Instagram or TikTok)</li>
-            <li>Analytics</li>
-            <li>5-day free trial</li>
-          </ul>
-          ${_currentPlan === 'starter'
-            ? '<div class="pm-current-badge">Current plan</div>'
-            : `<button class="pm-cta" onclick="startCheckout('starter')">Start free trial</button>`}
-        </div>
-
-        <!-- PRO -->
-        <div class="pm-card ${_currentPlan === 'pro' ? 'pm-current' : ''}">
-          <div class="pm-card-header">
-            <div class="pm-plan-name">Pro</div>
-            <div class="pm-price-wrap">
-              <span class="pm-price" id="pm-pro-price">$24</span>
-              <span class="pm-per">/mo</span>
-            </div>
-            <div class="pm-billed-note" id="pm-pro-note"></div>
-          </div>
-          <ul class="pm-features">
-            <li>Unlimited posts</li>
-            <li>Unlimited drafts</li>
-            <li>Both Instagram + TikTok</li>
-            <li>Analytics</li>
-            <li>5-day free trial</li>
-            <li>Priority support</li>
-          </ul>
-          ${_currentPlan === 'pro'
-            ? '<div class="pm-current-badge">Current plan</div>'
-            : `<button class="pm-cta pm-cta-pro" onclick="startCheckout('pro')">Start free trial</button>`}
-        </div>
-
-      </div>
-      <p class="pm-footer">Cancel anytime. No hidden fees.</p>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-  requestAnimationFrame(() => overlay.querySelector('.pm-sheet').classList.add('pm-sheet-in'));
-}
-
-function closePricingModal() {
-  const m = document.getElementById('pricing-modal');
-  if (m) { m.querySelector('.pm-sheet').classList.remove('pm-sheet-in'); setTimeout(() => m.remove(), 300); }
-}
-
-function toggleBilling(annual) {
-  _pricingBillingAnnual = annual;
-  const monthlyLabel = document.getElementById('pm-monthly-label');
-  const annualLabel = document.getElementById('pm-annual-label');
-  if (monthlyLabel) monthlyLabel.style.fontWeight = annual ? '400' : '700';
-  if (annualLabel) annualLabel.style.fontWeight = annual ? '700' : '400';
-
-  const starterPrice = document.getElementById('pm-starter-price');
-  const starterNote = document.getElementById('pm-starter-note');
-  const proPrice = document.getElementById('pm-pro-price');
-  const proNote = document.getElementById('pm-pro-note');
-
-  if (starterPrice) starterPrice.textContent = annual ? '$8' : '$12';
-  if (starterNote) starterNote.textContent = annual ? 'Billed $96/year' : '';
-  if (proPrice) proPrice.textContent = annual ? '$16' : '$24';
-  if (proNote) proNote.textContent = annual ? 'Billed $192/year' : '';
-}
-
-async function startCheckout(plan) {
-  const btn = event.target;
-  btn.textContent = 'Loading...';
-  btn.disabled = true;
-
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      alert('Please sign in first to subscribe.');
-      btn.textContent = 'Start free trial';
-      btn.disabled = false;
-      return;
-    }
-
-    const priceKey = `${plan}_${_pricingBillingAnnual ? 'annual' : 'monthly'}`;
-    const priceId = STRIPE_PRICES[priceKey];
-
-    const { data, error } = await sb.functions.invoke('stripe-checkout', {
-      body: { price_id: priceId, user_id: session.user.id, email: session.user.email },
-    });
-
-    if (error || !data?.url) throw new Error(error?.message || 'Could not create checkout session');
-    window.location.href = data.url;
-  } catch(e) {
-    console.error('Checkout error:', e);
-    alert('Something went wrong. Please try again.');
-    btn.textContent = 'Start free trial';
-    btn.disabled = false;
-  }
-}
-
-// ============================================================
-// PRICING CSS (injected once)
-// ============================================================
-(function injectPricingStyles() {
-  if (document.getElementById('pricing-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'pricing-styles';
-  s.textContent = `
-    #pricing-modal { position:fixed; inset:0; z-index:9999; display:flex; align-items:flex-end; justify-content:center; }
-    .pm-backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.55); }
-    .pm-sheet { position:relative; background:#fff; border-radius:20px 20px 0 0; width:100%; max-width:520px; max-height:92vh; overflow-y:auto; padding:24px 20px 40px; transform:translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
-    .pm-sheet-in { transform:translateY(0); }
-    .pm-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:#666; }
-    .pm-alert { background:#fff3e0; border-left:3px solid #ff9800; padding:10px 14px; border-radius:6px; font-size:13px; color:#e65100; margin-bottom:16px; }
-    .pm-title { font-size:22px; font-weight:700; color:#1a1a1a; margin:0 0 16px; text-align:center; }
-    .pm-billing-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; }
-    .pm-toggle-label { font-size:14px; color:#333; }
-    .pm-save-badge { background:#7c3fcc; color:#fff; font-size:10px; padding:2px 6px; border-radius:10px; margin-left:4px; }
-    .pm-switch { position:relative; width:40px; height:22px; }
-    .pm-switch input { opacity:0; width:0; height:0; }
-    .pm-slider { position:absolute; inset:0; background:#ddd; border-radius:22px; cursor:pointer; transition:.3s; }
-    .pm-slider:before { content:''; position:absolute; width:16px; height:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-    .pm-switch input:checked + .pm-slider { background:#7c3fcc; }
-    .pm-switch input:checked + .pm-slider:before { transform:translateX(18px); }
-    .pm-cards { display:flex; flex-direction:column; gap:14px; }
-    .pm-card { border:1.5px solid #e0e0e0; border-radius:14px; padding:18px 16px 16px; position:relative; }
-    .pm-popular { border-color:#7c3fcc; }
-    .pm-current { border-color:#4caf50; }
-    .pm-popular-badge { position:absolute; top:-10px; left:16px; background:#7c3fcc; color:#fff; font-size:11px; font-weight:600; padding:2px 10px; border-radius:10px; }
-    .pm-card-header { margin-bottom:10px; }
-    .pm-plan-name { font-size:15px; font-weight:700; color:#1a1a1a; margin-bottom:4px; }
-    .pm-price-wrap { display:flex; align-items:baseline; gap:2px; }
-    .pm-price { font-size:30px; font-weight:800; color:#1a1a1a; }
-    .pm-per { font-size:13px; color:#888; }
-    .pm-billed-note { font-size:11px; color:#888; margin-top:2px; }
-    .pm-features { list-style:none; padding:0; margin:0 0 12px; }
-    .pm-features li { font-size:13px; color:#444; padding:3px 0 3px 18px; position:relative; }
-    .pm-features li:before { content:'\\2713'; position:absolute; left:0; color:#7c3fcc; font-weight:700; }
-    .pm-cta { display:block; width:100%; background:#7c3fcc; color:#fff; border:none; padding:13px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; }
-    .pm-cta-pro { background:#1a1a1a; }
-    .pm-cta:disabled { opacity:0.6; }
-    .pm-current-badge { text-align:center; font-size:13px; color:#4caf50; font-weight:600; padding:8px 0 0; }
-    .pm-footer { text-align:center; font-size:12px; color:#aaa; margin:16px 0 0; }
-  `;
-  document.head.appendChild(s);
-})();
-
-// ============================================================
-// INIT - load plan on app start, then enforce gates
-// ============================================================
-(function initStripe() {
-  // Load plan when app starts
-  loadUserPlan().then(plan => {
-    console.log('[PostAway] Plan loaded:', plan);
-  });
-
-  // Patch switchTab to show upgrade for analytics on free plan
-  const _origSwitchTabStripe = window.switchTab;
-  window.switchTab = function(tab) {
-    if (tab === 'analytics' && _currentPlan === 'free') {
-      showUpgradePrompt('view_analytics');
-      return;
-    }
-    if (typeof _origSwitchTabStripe === 'function') _origSwitchTabStripe(tab);
-  };
-})();
