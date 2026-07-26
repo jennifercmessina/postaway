@@ -201,6 +201,7 @@ async function initApp(isNewUser = false) {
   renderConnectedAccounts();
   await loadDashboard();
   await loadSubscription();
+  checkUpgradePrompts();
 }
 
 // ---- DASHBOARD ----
@@ -217,6 +218,12 @@ async function loadDashboard() {
 
   document.getElementById('stat-scheduled').textContent = scheduled.length;
   document.getElementById('stat-published').textContent = published.length;
+
+  // Upgrade CTA banner for free users
+  const upgradeBar = document.getElementById('dashboard-upgrade-bar');
+  if (upgradeBar) {
+    upgradeBar.style.display = userPlan === 'free' ? 'block' : 'none';
+  }
 
   const list = document.getElementById('upcoming-list');
   if (scheduled.length === 0) {
@@ -822,6 +829,12 @@ async function scheduleAll() {
   document.getElementById('sched-step-0').style.display = 'block';
 
   switchTab('home');
+
+  // First-post upgrade prompt for free users
+  if (userPlan === 'free' && !localStorage.getItem('pa_upgrade_shown_firstpost')) {
+    localStorage.setItem('pa_upgrade_shown_firstpost', '1');
+    setTimeout(() => showUpgradePrompt('firstpost'), 2500);
+  }
 }
 
 // ---- RANDOMIZER ----
@@ -1066,11 +1079,48 @@ async function startCheckout(priceId) {
   }
 }
 
+function checkUpgradePrompts() {
+  if (userPlan !== 'free') return;
+
+  // First login - show immediately
+  if (!localStorage.getItem('pa_upgrade_shown_first')) {
+    localStorage.setItem('pa_upgrade_shown_first', '1');
+    if (!localStorage.getItem('pa_signup_date')) {
+      localStorage.setItem('pa_signup_date', Date.now().toString());
+    }
+    setTimeout(() => showUpgradePrompt('trial'), 3000);
+    return;
+  }
+
+  // Record signup date if not already set
+  if (!localStorage.getItem('pa_signup_date')) {
+    localStorage.setItem('pa_signup_date', Date.now().toString());
+  }
+
+  const signupDate = parseInt(localStorage.getItem('pa_signup_date') || '0', 10);
+  const daysSince = (Date.now() - signupDate) / (1000 * 60 * 60 * 24);
+
+  // After 1 week
+  if (daysSince >= 7 && !localStorage.getItem('pa_upgrade_shown_week1')) {
+    localStorage.setItem('pa_upgrade_shown_week1', '1');
+    setTimeout(() => showUpgradePrompt('trial'), 3000);
+    return;
+  }
+
+  // After 3 weeks
+  if (daysSince >= 21 && !localStorage.getItem('pa_upgrade_shown_week3')) {
+    localStorage.setItem('pa_upgrade_shown_week3', '1');
+    setTimeout(() => showUpgradePrompt('trial'), 3000);
+  }
+}
+
 function showUpgradePrompt(reason) {
   const msgs = {
-    posts:  'You have reached the 10 post limit on the Free plan. Upgrade to Starter for unlimited scheduling.',
-    tiktok: 'TikTok scheduling requires a Starter or Pro plan.',
-    both:   'Posting to both platforms at once requires a Pro plan.'
+    posts:     'You have reached the 10-post limit on the Free plan. Upgrade to schedule unlimited posts.',
+    tiktok:    'TikTok scheduling requires a Starter or Pro plan.',
+    both:      'Posting to both platforms at once requires a Pro plan.',
+    trial:     'Try PostAway Starter free for 5 days - no commitment. Add your card now and cancel any time before day 5 and you will never be charged.',
+    firstpost: 'Nice, your first post is scheduled! Ready to unlock unlimited posts and more platforms? Try Starter free for 5 days - cancel before day 5 and you will not be charged a thing.'
   };
   const modal = document.getElementById('upgrade-modal');
   const msgEl = document.getElementById('upgrade-modal-msg');
