@@ -479,6 +479,7 @@ function switchTab(name) {
   if (name === 'home') loadDashboard();
   if (name === 'media') renderMediaTab();
   if (name === 'schedule') { renderSchedLibrary(); loadSchedPostsList(); }
+  if (name === 'analytics') renderAnalytics();
   if (name === 'randomizer') {
     const empty = document.getElementById('spin-empty');
     const grid = document.getElementById('spin-grid');
@@ -1165,3 +1166,115 @@ async function init() {
 }
 
 init();
+
+// ---- ANALYTICS ----
+let analyticsPeriod = 30;
+let followerChart = null;
+let engagementChart = null;
+
+function setAnalyticsPeriod(days, btn) {
+  analyticsPeriod = days;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const labels = { 7: 'Last 7 days', 30: 'Last 30 days', 90: 'Last 90 days' };
+  const el = document.getElementById('analytics-period-label');
+  if (el) el.textContent = labels[days] || 'Last ' + days + ' days';
+  renderAnalyticsCharts();
+}
+
+function renderAnalytics() {
+  // Reset scorecard values
+  ['ac-posts','ac-likes','ac-followers','ac-reach'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '--';
+  });
+  ['ac-posts-d','ac-likes-d','ac-followers-d','ac-reach-d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+
+  // Try to load real data from Supabase
+  loadAnalyticsData();
+  renderAnalyticsCharts();
+  renderHeatmap();
+}
+
+async function loadAnalyticsData() {
+  if (!user) return;
+  try {
+    const since = new Date(Date.now() - analyticsPeriod * 86400000).toISOString();
+    const { data } = await sb.from('scheduled_posts')
+      .select('platform, scheduled_at, status')
+      .eq('user_id', user.id)
+      .gte('scheduled_at', since)
+      .eq('status', 'published');
+    if (!data) return;
+    const postEl = document.getElementById('ac-posts');
+    if (postEl) postEl.textContent = data.length || '0';
+  } catch(e) { /* no data yet */ }
+}
+
+function renderAnalyticsCharts() {
+  const noDataLabels = ['Week 1','Week 2','Week 3','Week 4'];
+  const emptyData = [0,0,0,0];
+
+  // Follower Growth chart
+  const fCanvas = document.getElementById('chart-followers');
+  if (fCanvas) {
+    if (followerChart) { followerChart.destroy(); followerChart = null; }
+    followerChart = new Chart(fCanvas, {
+      type: 'line',
+      data: {
+        labels: noDataLabels,
+        datasets: [
+          { label: 'Instagram', data: emptyData, borderColor: '#E1306C', backgroundColor: 'rgba(225,48,108,0.08)', tension: 0.4, pointRadius: 4 },
+          { label: 'TikTok',    data: emptyData, borderColor: '#010101', backgroundColor: 'rgba(0,0,0,0.05)',       tension: 0.4, pointRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+
+  // Engagement chart
+  const eCanvas = document.getElementById('chart-engagement');
+  if (eCanvas) {
+    if (engagementChart) { engagementChart.destroy(); engagementChart = null; }
+    engagementChart = new Chart(eCanvas, {
+      type: 'bar',
+      data: {
+        labels: noDataLabels,
+        datasets: [
+          { label: 'Likes', data: emptyData, backgroundColor: 'rgba(124,63,204,0.7)', borderRadius: 6 },
+          { label: 'Comments', data: emptyData, backgroundColor: 'rgba(201,168,76,0.7)', borderRadius: 6 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmap-container');
+  if (!container) return;
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const hours = ['6am','9am','12pm','3pm','6pm','9pm'];
+  let html = '<div style="display:grid;grid-template-columns:32px repeat(6,1fr);gap:4px;font-size:11px;">';
+  html += '<div></div>';
+  hours.forEach(h => { html += '<div style="text-align:center;color:var(--muted,#888);padding-bottom:4px;">' + h + '</div>'; });
+  days.forEach(d => {
+    html += '<div style="color:var(--muted,#888);display:flex;align-items:center;">' + d + '</div>';
+    hours.forEach(() => {
+      html += '<div style="background:var(--border,#eee);border-radius:4px;height:28px;opacity:0.4;"></div>';
+    });
+  });
+  html += '</div><p style="font-size:12px;color:var(--muted,#888);margin-top:12px;text-align:center;">Post data will populate this chart once you publish content.</p>';
+  container.innerHTML = html;
+}
