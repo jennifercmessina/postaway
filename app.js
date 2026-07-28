@@ -865,22 +865,33 @@ function loadRandomizerPhotos(files) {
   document.getElementById('rand-btn').disabled = randFiles.length < 2;
 }
 
+function getFileUrl(f) {
+  return f.isLibrary ? f.url : (f._cachedUrl || (f._cachedUrl = URL.createObjectURL(f)));
+}
+
 function runRandomizer() {
   if (randFiles.length < 2) return;
 
   const slots = document.querySelectorAll('#spin-grid .spin-slot');
   slots.forEach(s => s.classList.add('spinning'));
 
+  // Pre-build stable img elements - just swap src, never recreate
+  slots.forEach((slot, i) => {
+    if (!slot.querySelector('img') && randFiles[i]) {
+      const img = document.createElement('img');
+      img.src = getFileUrl(randFiles[i]);
+      slot.appendChild(img);
+    }
+  });
+
+  const allUrls = randFiles.map(f => getFileUrl(f));
+
   let ticks = 0;
   const interval = setInterval(() => {
-    const shuffled = [...randFiles].sort(() => Math.random() - 0.5);
+    const shuffledUrls = [...allUrls].sort(() => Math.random() - 0.5);
     slots.forEach((slot, i) => {
-      if (shuffled[i]) {
-        slot.innerHTML = '';
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(shuffled[i]);
-        slot.appendChild(img);
-      }
+      const img = slot.querySelector('img');
+      if (img && shuffledUrls[i]) img.src = shuffledUrls[i];
     });
     ticks++;
     if (ticks >= 12) {
@@ -888,12 +899,8 @@ function runRandomizer() {
       slots.forEach(s => s.classList.remove('spinning'));
       randOrder = [...randFiles].sort(() => Math.random() - 0.5);
       slots.forEach((slot, i) => {
-        slot.innerHTML = '';
-        if (randOrder[i]) {
-          const img = document.createElement('img');
-          img.src = URL.createObjectURL(randOrder[i]);
-          slot.appendChild(img);
-        }
+        const img = slot.querySelector('img');
+        if (img && randOrder[i]) img.src = getFileUrl(randOrder[i]);
       });
       showRandResult();
     }
@@ -904,20 +911,21 @@ function showRandResult() {
   const el = document.getElementById('rand-result');
   el.style.display = 'block';
   document.getElementById('rand-result-grid').innerHTML = randOrder.map(f =>
-    `<div class="photo-item"><img src="${URL.createObjectURL(f)}" loading="lazy"></div>`
+    `<div class="photo-item"><img src="${getFileUrl(f)}" loading="lazy"></div>`
   ).join('');
 }
 
 function sendRandToScheduler() {
   photos = randOrder.map((f, i) => ({
-    file: f,
-    url: URL.createObjectURL(f),
+    file: f.isLibrary ? null : f,
+    url: getFileUrl(f),
+    uploadedUrl: f.isLibrary ? f.url : null,
     caption: DEFAULT_CAPTIONS[i % DEFAULT_CAPTIONS.length],
     hashtags: TAGS[i % TAGS.length]
   }));
   renderPhotoGrid();
   switchTab('schedule');
-  toast('Photos loaded in Schedule tab', 'success');
+  toast('Photos loaded in Schedule tab - captions and tags ready', 'success');
 }
 
 // ---- GOOGLE / APPLE LOGIN ----
