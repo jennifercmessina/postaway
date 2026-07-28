@@ -47,9 +47,9 @@ const DEFAULT_CAPTIONS = [
 
 // ---- PLAN LIMITS ----
 const PLAN_LIMITS = {
-  free:    { maxPosts: 10,       label: 'Free Plan', canUseTikTok: false, canUseBoth: false },
-  starter: { maxPosts: Infinity, label: 'Starter',   canUseTikTok: true,  canUseBoth: false },
-  pro:     { maxPosts: Infinity, label: 'Pro',        canUseTikTok: true,  canUseBoth: true  }
+  free:    { maxPosts: 10,       label: 'Free Plan', canUseTikTok: false, canUseBoth: false, canUseAI: false },
+  starter: { maxPosts: Infinity, label: 'Starter',   canUseTikTok: true,  canUseBoth: false, canUseAI: true  },
+  pro:     { maxPosts: Infinity, label: 'Pro',        canUseTikTok: true,  canUseBoth: true,  canUseAI: true  }
 };
 
 // App state
@@ -582,6 +582,9 @@ function setAIProvider(provider) {
 }
 
 async function runAI() {
+  const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
+  if (!limits.canUseAI) { showUpgradePrompt('ai'); return; }
+
   const provider = localStorage.getItem('pf_ai_provider') || 'claude';
   const key = localStorage.getItem('pf_api_key_' + provider) || localStorage.getItem('pf_api_key') || '';
   if (!key) { toast('Add your API key in Profile > AI Settings first', 'error'); switchTab('profile'); return; }
@@ -1048,13 +1051,31 @@ async function loadSubscription() {
 }
 
 function updatePlanUI() {
-  const label = PLAN_LIMITS[userPlan]?.label || 'Free Plan';
+  const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
+  const label = limits.label || 'Free Plan';
   const badge = document.getElementById('plan-badge');
   const planVal = document.getElementById('profile-plan-val');
   if (badge) badge.textContent = label;
   if (planVal) planVal.textContent = label;
   const upgradeSection = document.getElementById('upgrade-section');
   if (upgradeSection) upgradeSection.style.display = userPlan === 'pro' ? 'none' : 'block';
+
+  // Update AI nudge message based on plan
+  const nudge = document.getElementById('ai-nudge-msg');
+  if (nudge) {
+    if (!limits.canUseAI) {
+      nudge.innerHTML = '✦ <strong style="color:var(--gold-light)">AI Captions</strong> are a Starter and Pro feature. <a href="#" onclick="showUpgradePrompt(\'ai\');return false" style="color:var(--gold-light);text-decoration:underline">Upgrade to unlock</a> auto-generated captions and hashtags.';
+    } else {
+      nudge.innerHTML = '✦ <strong style="color:var(--gold-light)">AI caption generation</strong> - add your API key in <a href="#" onclick="switchTab(\'profile\');return false">Profile &gt; AI Settings</a> to auto-generate captions and hashtags for your posts.';
+    }
+  }
+
+  // Disable/grey AI button for free users
+  const aiBtn = document.getElementById('ai-gen-btn');
+  if (aiBtn) {
+    aiBtn.style.opacity = limits.canUseAI ? '1' : '0.5';
+    aiBtn.title = limits.canUseAI ? '' : 'Upgrade to Starter or Pro to use AI captions';
+  }
 }
 
 async function startCheckout(priceId) {
@@ -1120,6 +1141,7 @@ function showUpgradePrompt(reason) {
     posts:     'You have reached the 10-post limit on the Free plan. Upgrade to schedule unlimited posts.',
     tiktok:    'TikTok scheduling requires a Starter or Pro plan.',
     both:      'Posting to both platforms at once requires a Pro plan.',
+    ai:        'AI caption generation is a Starter and Pro feature. Upgrade to auto-generate captions and hashtags from your photos.',
     trial:     'Try PostAway Starter free for 5 days - no commitment. Add your card now and cancel any time before day 5 and you will never be charged.',
     firstpost: 'Nice, your first post is scheduled! Ready to unlock unlimited posts and more platforms? Try Starter free for 5 days - cancel before day 5 and you will not be charged a thing.'
   };
