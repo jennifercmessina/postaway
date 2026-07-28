@@ -219,10 +219,11 @@ async function loadDashboard() {
   document.getElementById('stat-scheduled').textContent = scheduled.length;
   document.getElementById('stat-published').textContent = published.length;
 
-  // Upgrade CTA banner for free users
+  // Upgrade CTA banner - only show when free user hits the 10-post limit
   const upgradeBar = document.getElementById('dashboard-upgrade-bar');
   if (upgradeBar) {
-    upgradeBar.style.display = userPlan === 'free' ? 'block' : 'none';
+    const totalPosts = scheduled.length + published.length;
+    upgradeBar.style.display = (userPlan === 'free' && totalPosts >= 10) ? 'block' : 'none';
   }
 
   const list = document.getElementById('upcoming-list');
