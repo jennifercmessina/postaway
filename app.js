@@ -1044,10 +1044,12 @@ function saveApiKey() {
 
 // ---- SUBSCRIPTION ----
 async function loadSubscription() {
-  // Developer account - always pro
+  // Developer account - show plan toggle bar, default to pro
   if (user && user.email === 'business@jennifercmessina.com') {
     userPlan = 'pro';
-    updatePlanUI();
+    const bar = document.getElementById('dev-plan-bar');
+    if (bar) bar.style.display = 'flex';
+    devSetPlan('pro');
     return;
   }
 
@@ -1115,6 +1117,26 @@ async function startCheckout(priceId) {
     toast('Checkout failed: ' + e.message, 'error');
     btns.forEach(b => { b.disabled = false; b.textContent = 'Start Free Trial'; });
   }
+}
+
+function devSetPlan(plan) {
+  userPlan = plan;
+  updatePlanUI();
+  // Update active button style
+  ['free', 'starter', 'pro'].forEach(p => {
+    const btn = document.getElementById('dev-btn-' + p);
+    if (!btn) return;
+    if (p === plan) {
+      btn.style.background = 'var(--primary)';
+      btn.style.borderColor = 'var(--primary)';
+      btn.style.color = '#fff';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.08)';
+      btn.style.borderColor = 'rgba(255,255,255,0.2)';
+      btn.style.color = 'var(--text-main)';
+    }
+  });
+  toast('Dev mode: viewing as ' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan', 'success');
 }
 
 function checkUpgradePrompts() {
