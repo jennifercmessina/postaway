@@ -584,14 +584,7 @@
           </div>
         </div>
 
-        <style>
-          .toggle { position:relative; display:inline-block; width:44px; height:24px; }
-          .toggle input { opacity:0; width:0; height:0; }
-          .toggle-knob { position:absolute; cursor:pointer; inset:0; background:var(--gray-dim); border-radius:24px; transition:.3s; }
-          .toggle-knob:before { content:''; position:absolute; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
-          .toggle input:checked + .toggle-knob { background:var(--gold); }
-          .toggle input:checked + .toggle-knob:before { transform:translateX(20px); }
-        </style>
+
 
         <button class="btn btn-gold" onclick="buildPreview()">Preview Schedule</button>
       </div>
@@ -758,30 +751,7 @@
     </div>
 
     <!-- ===== TAB: ANALYTICS ===== -->
-    <style>
-      .chart-wrap { position:relative; height:200px; margin-top:12px; }
-      .analytics-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-      .analytics-title { font-size:22px; font-weight:700; margin:0; }
-      .analytics-subtitle { font-size:13px; color:var(--muted,#888); margin:2px 0 0; }
-      .period-pills { display:flex; gap:6px; }
-      .pill { background:none; border:1.5px solid var(--border,#e5e5e5); border-radius:99px; padding:5px 14px; font-size:13px; font-weight:600; cursor:pointer; color:var(--muted,#888); }
-      .pill.active { background:var(--purple-500,#7c3fcc); border-color:var(--purple-500,#7c3fcc); color:#fff; }
-      .analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
-      .analytics-card { background:var(--card,#fff); border:1px solid var(--border,#e5e5e5); border-radius:14px; padding:16px; }
-      .ac-label { font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted,#888); margin-bottom:6px; }
-      .ac-value { font-size:28px; font-weight:800; color:var(--ink,#111); }
-      .ac-delta { font-size:12px; color:var(--muted,#888); margin-top:2px; }
-      .analytics-section { background:var(--card,#fff); border:1px solid var(--border,#e5e5e5); border-radius:14px; padding:16px; margin-bottom:14px; }
-      .analytics-section-title { display:flex; align-items:center; justify-content:space-between; font-size:15px; font-weight:700; margin-bottom:4px; }
-      .chart-legend { display:flex; gap:12px; font-size:12px; color:var(--muted,#888); }
-      .legend-ig { color:#E1306C; }
-      .legend-tt { color:#010101; }
-      .platform-compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
-      .platform-col { border:1px solid var(--border,#e5e5e5); border-radius:12px; overflow:hidden; }
-      .platform-col-head { padding:10px 14px; font-weight:700; font-size:14px; color:#fff; text-align:center; }
-      .platform-stat { display:flex; justify-content:space-between; padding:9px 14px; font-size:13px; border-top:1px solid var(--border,#e5e5e5); }
-      .platform-stat strong { font-weight:700; }
-    </style>
+
     <div class="tab-panel" id="tab-analytics" style="display:none">
       <div class="analytics-header">
         <div>
