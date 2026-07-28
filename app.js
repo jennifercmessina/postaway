@@ -588,7 +588,7 @@ function setAIProvider(provider) {
   if (profileInput) profileInput.value = saved;
 }
 
-async function callCaptionAI(imageB64, mediaType, userHint, mode) {
+async function callCaptionAI(imageB64, mediaType, userHint, mode, imageUrl = null) {
   const SUPABASE_URL = 'https://aajkbqmzuqfzzugjmerp.supabase.co';
   const hintLine = (mode === 'refine' && userHint && userHint.trim())
     ? `\nThe creator has provided this direction: "${userHint.trim()}". Incorporate this tone/theme into the caption.`
@@ -604,7 +604,7 @@ async function callCaptionAI(imageB64, mediaType, userHint, mode) {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-caption`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ imageB64, mediaType, prompt })
+        body: JSON.stringify({ imageB64, imageUrl, mediaType, userHint, mode })
       });
       if (res.ok) {
         const d = await res.json();
@@ -669,18 +669,16 @@ async function runAISingle(index, mode) {
   if (card) card.querySelectorAll('button').forEach(b => b.disabled = true);
 
   try {
-    let b64, mediaType;
+    let b64 = null, mediaType = 'image/jpeg', imageUrl = null;
     if (p.file) {
       b64 = await fileToB64(p.file);
       mediaType = p.file.type || 'image/jpeg';
     } else if (p.uploadedUrl || p.url) {
-      // For library images fetch via proxy or skip vision, use hint-only prompt
-      b64 = null;
-      mediaType = 'image/jpeg';
+      imageUrl = p.uploadedUrl || p.url;
     }
 
-    const userHint = document.getElementById('cap-' + index)?.value || p.caption || '';
-    const txt = await callCaptionAI(b64, mediaType, userHint, mode);
+    const userHint = document.getElementById('cap-' + index)?.value || '';
+    const txt = await callCaptionAI(b64, mediaType, userHint, mode, imageUrl);
     if (txt) {
       parseCaptionAIResponse(txt, index);
       toast('Caption generated', 'success');
