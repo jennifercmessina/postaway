@@ -24,199 +24,419 @@
 <div class="toast" id="toast"></div>
 
 <!-- ===== SCREEN: LANDING ===== -->
-<div class="screen active" id="screen-landing" style="overflow-y:auto;background:var(--bg);">
+<style>
+  @keyframes pa-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .pa-pulse { animation: pa-pulse 2s infinite; }
+  .land-nav-link { color:rgba(255,255,255,0.55); text-decoration:none; font-size:14px; font-weight:500; transition:color .2s; }
+  .land-nav-link:hover { color:#fff; }
+  .land-feat-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:20px; padding:28px; transition:border-color .25s; }
+  .land-feat-card:hover { border-color:rgba(124,63,204,0.5); }
+  .land-price-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:32px; display:flex; flex-direction:column; }
+  .land-faq-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:14px; overflow:hidden; cursor:pointer; }
+  .land-tab-btn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; transition:all .2s; }
+  .land-tab-btn.active { background:#7C3FCC; color:#fff; }
+  .land-tab-btn:not(.active) { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); }
+</style>
+<div class="screen active" id="screen-landing" style="overflow-y:auto;background:#0A0614;color:#fff;font-family:'Poppins',-apple-system,sans-serif;">
+
   <!-- NAV -->
-  <nav style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px 16px;position:sticky;top:0;background:rgba(253,252,254,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:10;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" width="32" height="32" alt="PostAway" style="border-radius:8px;">
-      <span style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:800;color:var(--purple-900);">PostAway</span>
+  <nav style="position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(10,6,20,0.82);border-bottom:1px solid rgba(124,63,204,0.18);">
+    <div style="max-width:1100px;margin:0 auto;padding:0 20px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <!-- Logo -->
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" width="34" height="34" alt="PostAway" style="border-radius:9px;box-shadow:0 4px 14px rgba(124,63,204,0.4);">
+        <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.01em;">PostAway</span>
+      </div>
+      <!-- Center nav links (hidden on small screens via JS resize handled below) -->
+      <div id="land-nav-links" style="display:flex;gap:24px;align-items:center;">
+        <a href="#" class="land-nav-link" onclick="landScroll('land-features');return false;">Features</a>
+        <a href="#" class="land-nav-link" onclick="landScroll('land-preview');return false;">Preview</a>
+        <a href="#" class="land-nav-link" onclick="landScroll('land-pricing');return false;">Pricing</a>
+        <a href="#" class="land-nav-link" onclick="landScroll('land-faq');return false;">FAQ</a>
+        <a href="#" class="land-nav-link" onclick="landScroll('land-about');return false;">About</a>
+      </div>
+      <!-- Right CTAs -->
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <button onclick="showScreen('screen-login')" style="background:none;border:none;color:rgba(255,255,255,0.65);font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;font-family:'Poppins',sans-serif;">Sign In</button>
+        <button onclick="showScreen('screen-signup')" style="background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 16px rgba(124,63,204,0.35);">Get Started Free</button>
+      </div>
     </div>
-    <button onclick="showScreen('screen-login')" style="background:none;border:1.5px solid var(--gold-border);color:var(--gold);font-size:14px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;">Sign In</button>
   </nav>
 
   <!-- HERO -->
-  <section style="padding:56px 24px 48px;text-align:center;max-width:480px;margin:0 auto;">
-    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--purple-50);border:1px solid var(--purple-100);border-radius:99px;padding:6px 14px;margin-bottom:24px;">
-      <span style="font-size:13px;color:var(--purple-700);font-weight:600;">Instagram + TikTok Scheduling</span>
-    </div>
-    <h1 style="font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;line-height:1.1;color:var(--ink);letter-spacing:-0.02em;margin-bottom:18px;">Schedule posts.<br><span style="background:linear-gradient(135deg,var(--purple-500),var(--purple-700));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Grow effortlessly.</span></h1>
-    <p style="font-size:17px;color:var(--body-text);line-height:1.6;margin-bottom:36px;">PostAway lets you plan, schedule, and auto-publish your Instagram and TikTok content from one simple app. No more missing the algorithm.</p>
-    <div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto;">
-      <button onclick="showScreen('screen-signup')" style="background:linear-gradient(135deg,var(--purple-500),var(--purple-700));color:#fff;border:none;border-radius:12px;padding:16px 24px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;letter-spacing:0.01em;">Get Started Free</button>
-      <button onclick="showScreen('screen-login')" style="background:none;border:1.5px solid var(--border);color:var(--body-text);border-radius:12px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;">Already have an account? Sign in</button>
+  <section style="padding:72px 20px 64px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:rgba(124,63,204,0.13);border-radius:50%;filter:blur(110px);pointer-events:none;"></div>
+    <div style="position:relative;z-index:1;max-width:640px;margin:0 auto;">
+      <!-- Badge -->
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.35);border-radius:99px;margin-bottom:28px;">
+        <span class="pa-pulse" style="width:7px;height:7px;background:#A78BFA;border-radius:50%;display:inline-block;"></span>
+        <span style="font-size:13px;color:#C4B5FD;font-weight:600;">Instagram + TikTok auto-publishing is live</span>
+      </div>
+      <!-- Headline -->
+      <h1 style="font-size:clamp(36px,8vw,60px);font-weight:800;line-height:1.1;letter-spacing:-0.025em;color:#fff;margin-bottom:22px;">
+        Put your social media<br>on <span style="background:linear-gradient(135deg,#C4B5FD,#7C3FCC,#4C1D95);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Autopilot.</span>
+      </h1>
+      <!-- Sub -->
+      <p style="font-size:18px;color:rgba(255,255,255,0.55);line-height:1.65;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto;">
+        Schedule, auto-publish, and grow your Instagram and TikTok from one app. Never miss the algorithm again.
+      </p>
+      <!-- CTAs -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:300px;margin:0 auto 52px;">
+        <button onclick="showScreen('screen-signup')" style="width:100%;padding:16px 32px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 8px 28px rgba(124,63,204,0.42);letter-spacing:0.01em;">
+          Get Started Free &#8594;
+        </button>
+        <button onclick="showScreen('screen-login')" style="width:100%;padding:14px 24px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.13);border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
+          Already have an account? Sign in
+        </button>
+      </div>
     </div>
   </section>
 
-  <!-- MOCKUP / VISUAL -->
-  <section style="padding:0 16px 52px;">
-    <div style="max-width:420px;margin:0 auto;background:linear-gradient(160deg,var(--purple-900) 0%,var(--purple-700) 100%);border-radius:24px;padding:28px 24px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>
-      <div style="position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:rgba(255,255,255,0.04);border-radius:50%;"></div>
-      <div style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Your Posting Dashboard</div>
-      <div style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="color:#fff;font-weight:700;font-size:15px;">Upcoming Posts</span>
-          <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;">5 Scheduled</span>
+  <!-- APP PREVIEW MOCKUP -->
+  <section id="land-preview" style="padding:0 16px 72px;">
+    <div style="max-width:680px;margin:0 auto;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;box-shadow:0 24px 64px rgba(0,0,0,0.5);">
+      <!-- Window chrome -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div style="width:11px;height:11px;border-radius:50%;background:#FF5F57;"></div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#FEBC2E;"></div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#28C840;"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:8px;font-family:monospace;">postaway.app</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-radius:8px;flex-shrink:0;"></div>
-            <div style="flex:1;">
-              <div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px;">Summer Collection Reel</div>
-              <div style="color:rgba(255,255,255,0.5);font-size:11px;">Today, 2:00 PM - Instagram</div>
-            </div>
-            <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
-            <div style="width:36px;height:36px;background:linear-gradient(135deg,#010101,#69C9D0);border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-              <span style="color:#fff;font-size:11px;font-weight:800;">TT</span>
-            </div>
-            <div style="flex:1;">
-              <div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px;">Behind the Scenes</div>
-              <div style="color:rgba(255,255,255,0.5);font-size:11px;">Tomorrow, 9:00 AM - TikTok</div>
-            </div>
-            <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
-          </div>
+        <div style="display:flex;gap:8px;">
+          <button class="land-tab-btn active" id="ltab-queue" onclick="landTab('queue')">Queue</button>
+          <button class="land-tab-btn" id="ltab-analytics" onclick="landTab('analytics')">Analytics</button>
+          <button class="land-tab-btn" id="ltab-ai" onclick="landTab('ai')">AI Captions</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:14px;">
-          <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-bottom:4px;">Scheduled</div>
-          <div style="color:#fff;font-size:24px;font-weight:800;">5</div>
+      <!-- Queue Tab -->
+      <div id="land-tab-queue" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-radius:10px;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-size:13px;font-weight:600;color:#fff;">Summer Collection Reel</span>
+              <span style="font-size:10px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:4px;padding:2px 7px;">Scheduled</span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Today, 2:00 PM - Instagram</span>
+          </div>
+          <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
         </div>
-        <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:14px;">
-          <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-bottom:4px;">Published</div>
-          <div style="color:#fff;font-size:24px;font-weight:800;">28</div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,#010101,#69C9D0);border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:11px;font-weight:800;font-family:monospace;">TT</span>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-size:13px;font-weight:600;color:#fff;">Behind the Scenes</span>
+              <span style="font-size:10px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:4px;padding:2px 7px;">Queued</span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Tomorrow, 9:00 AM - TikTok</span>
+          </div>
+          <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
         </div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-radius:10px;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span style="font-size:13px;font-weight:600;color:#fff;">Morning Routine Carousel</span>
+              <span style="font-size:10px;font-weight:700;background:rgba(167,139,250,0.15);color:#A78BFA;border:1px solid rgba(167,139,250,0.3);border-radius:4px;padding:2px 7px;">Draft</span>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Thursday, 7:00 AM - Instagram</span>
+          </div>
+          <div style="width:8px;height:8px;background:rgba(255,255,255,0.2);border-radius:50%;flex-shrink:0;"></div>
+        </div>
+      </div>
+      <!-- Analytics Tab -->
+      <div id="land-tab-analytics" style="display:none;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Posts Published</div>
+            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">28</div>
+            <div style="font-size:12px;color:#4ade80;font-weight:600;">This month</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Reach</div>
+            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">14.8K</div>
+            <div style="font-size:12px;color:#4ade80;font-weight:600;">+34% vs last mo</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Engagement</div>
+            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">6.4%</div>
+            <div style="font-size:12px;color:#4ade80;font-weight:600;">Above avg</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;font-size:13px;color:rgba(255,255,255,0.5);text-align:center;">
+          Platform breakdown: Instagram 62% &nbsp;|&nbsp; TikTok 38%
+        </div>
+      </div>
+      <!-- AI Captions Tab -->
+      <div id="land-tab-ai" style="display:none;">
+        <div style="background:rgba(124,63,204,0.08);border:1px solid rgba(124,63,204,0.2);border-radius:14px;padding:16px;margin-bottom:12px;">
+          <div style="font-size:11px;color:#A78BFA;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">AI Caption Generator</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.6);font-family:monospace;margin-bottom:10px;">"Generate a caption for my summer collection reel with relevant hashtags..."</div>
+          <div style="font-size:13px;color:#C4B5FD;line-height:1.6;">
+            Summer is the season for bold moves. Shop our new collection link in bio and step into your era. &#9728;&#65039;<br>
+            <span style="color:rgba(255,255,255,0.35);">#summer #fashion #style #ootd #newcollection #aesthetic</span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;">AI captions available on Starter and Pro plans</div>
       </div>
     </div>
   </section>
 
   <!-- FEATURES -->
-  <section style="padding:0 20px 56px;max-width:480px;margin:0 auto;">
-    <h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:8px;letter-spacing:-0.01em;">Everything you need to post consistently</h2>
-    <p style="text-align:center;color:var(--muted);font-size:15px;margin-bottom:32px;">Built for creators who want to stay ahead without burning out.</p>
-    <div style="display:flex;flex-direction:column;gap:14px;">
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;gap:16px;align-items:flex-start;">
-        <div style="width:44px;height:44px;background:var(--purple-50);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">📅</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Visual Post Scheduler</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Pick a date and time, write your caption, and PostAway handles the rest. Auto-publishing to Instagram and TikTok.</div>
-        </div>
+  <section id="land-features" style="padding:0 20px 72px;background:rgba(0,0,0,0.25);">
+    <div style="max-width:680px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:48px;">
+        <h2 style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Built for creators who value their time</h2>
+        <p style="font-size:16px;color:rgba(255,255,255,0.5);line-height:1.6;">Stop logging into two apps every day. Manage Instagram and TikTok from one clean dashboard.</p>
       </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;gap:16px;align-items:flex-start;">
-        <div style="width:44px;height:44px;background:var(--purple-50);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🎲</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">AI Content Randomizer</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Stuck on what to post? The Randomizer pulls from your media library and schedules posts automatically so your feed never goes quiet.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">📅</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Visual Scheduler</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Pick a date and time, write your caption, and PostAway auto-publishes to Instagram and TikTok.</div>
         </div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;gap:16px;align-items:flex-start;">
-        <div style="width:44px;height:44px;background:var(--purple-50);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🖼️</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Media Library</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Upload your photos and videos once, reuse them forever. Your content vault, always ready when inspiration strikes.</div>
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">✨</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">AI Captions</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Generate on-brand captions and hashtags instantly. Paste your key topics and let AI do the rest.</div>
         </div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;gap:16px;align-items:flex-start;">
-        <div style="width:44px;height:44px;background:var(--purple-50);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">📊</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Multi-Platform, One App</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Connect your Instagram and TikTok accounts and manage everything from one clean dashboard. No tab switching required.</div>
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🖼️</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Media Library</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Upload once, reuse forever. Your content vault is always ready when inspiration strikes.</div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section style="padding:0 20px 56px;max-width:480px;margin:0 auto;">
-    <h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:32px;letter-spacing:-0.01em;">Up and running in minutes</h2>
-    <div style="display:flex;flex-direction:column;gap:0;">
-      <div style="display:flex;gap:16px;padding-bottom:28px;position:relative;">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
-          <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--purple-500),var(--purple-700));border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;font-family:'Poppins',sans-serif;">1</div>
-          <div style="width:2px;flex:1;background:var(--border);margin-top:8px;"></div>
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">📊</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Analytics</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Track reach, engagement, and post performance across both platforms in one view.</div>
         </div>
-        <div style="padding-top:8px;">
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Create your free account</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Sign up with email in under 30 seconds. No credit card needed.</div>
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🎲</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Content Randomizer</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Stuck on what to post? Randomizer pulls from your library and schedules content automatically.</div>
         </div>
-      </div>
-      <div style="display:flex;gap:16px;padding-bottom:28px;position:relative;">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
-          <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--purple-500),var(--purple-700));border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;font-family:'Poppins',sans-serif;">2</div>
-          <div style="width:2px;flex:1;background:var(--border);margin-top:8px;"></div>
-        </div>
-        <div style="padding-top:8px;">
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Connect your social accounts</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Link your Instagram Business or Creator account, and/or your TikTok profile with one tap.</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:16px;">
-        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
-          <div style="width:40px;height:40px;background:linear-gradient(135deg,var(--purple-500),var(--purple-700));border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px;font-family:'Poppins',sans-serif;">3</div>
-        </div>
-        <div style="padding-top:8px;">
-          <div style="font-weight:700;font-size:15px;color:var(--ink);margin-bottom:4px;">Schedule and relax</div>
-          <div style="font-size:14px;color:var(--muted);line-height:1.5;">Upload your content, pick your times, and PostAway posts for you - even while you sleep.</div>
+        <div class="land-feat-card">
+          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🔔</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Email Alerts</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Get notified when posts publish or if anything needs attention - no manual checking required.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ABOUT -->
-  <section id="about" style="padding:0 20px 56px;max-width:480px;margin:0 auto;">
-    <h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:var(--ink);text-align:center;margin-bottom:8px;letter-spacing:-0.01em;">Why I built this</h2>
-    <p style="text-align:center;color:var(--muted);font-size:15px;margin-bottom:32px;">A tool born from service, performance, and years in the trenches of social media.</p>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;">
-      <!-- Bio photo -->
-      <div style="width:100%;height:280px;overflow:hidden;position:relative;">
-        <img src="https://jennifercmessina.com/wp-content/uploads/2022/02/IMG_1273-Jennifer-Messina.png" alt="Jennifer C. Messina" style="width:100%;height:100%;object-fit:cover;object-position:center 15%;">
-        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(255,255,255,0.95) 100%);"></div>
+  <!-- ROI CALCULATOR -->
+  <section style="padding:64px 20px;border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);">
+    <div style="max-width:560px;margin:0 auto;text-align:center;background:linear-gradient(160deg,rgba(124,63,204,0.12),rgba(91,43,153,0.08));border:1px solid rgba(124,63,204,0.2);border-radius:24px;padding:48px 32px;">
+      <h2 style="font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;">How much time will you save?</h2>
+      <p style="font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:32px;">Adjust based on your weekly posts:</p>
+      <div style="max-width:360px;margin:0 auto 28px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:10px;">
+          <span>Posts per week:</span>
+          <span id="land-slider-val" style="color:#A78BFA;font-weight:800;font-size:18px;">15</span>
+        </div>
+        <input type="range" id="land-post-slider" min="5" max="50" value="15" step="5" style="width:100%;accent-color:#7C3FCC;cursor:pointer;" oninput="landCalc()">
       </div>
-      <!-- Name block -->
-      <div style="padding:0 24px 20px;margin-top:-20px;position:relative;">
-        <div style="font-weight:800;font-size:20px;color:var(--ink);font-family:'Poppins',sans-serif;margin-bottom:4px;">Jennifer C. Messina</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.5;">U.S. Army Veteran (Public Affairs) · Recording Artist · Actress · Founder, Messina Enterprises &amp; Messina Glam</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Hours saved / month</div>
+          <div id="land-hours-saved" style="font-size:28px;font-weight:800;color:#fff;">11.3 hrs</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Value at $50/hr</div>
+          <div id="land-dollars-saved" style="font-size:28px;font-weight:800;color:#4ade80;">$563/mo</div>
+        </div>
       </div>
-      <div style="padding:0 24px 24px;border-top:1px solid var(--border);padding-top:20px;margin:0 24px 0;"></div>
-      <div style="padding:0 24px 24px;">
+    </div>
+  </section>
 
-      <p style="font-size:15px;color:var(--body-text);line-height:1.75;margin-bottom:16px;">I have spent my career living at the intersection of storytelling, service, and strategy. After 14 years in the U.S. Army as a Public Affairs Officer across multiple combatant commands, I learned that communication is not just a skill - it is a weapon, a bridge, and a brand.</p>
-
-      <p style="font-size:15px;color:var(--body-text);line-height:1.75;margin-bottom:16px;">Toward the end of my Army career, we began using AI to help create products faster. It didn't replace the years of training or the investment the Department of Defense had made in me as a seasoned commissioned officer - it made my productivity sharper. That is the same vision I had for PostAway.</p>
-
-      <p style="font-size:15px;color:var(--body-text);line-height:1.75;margin-bottom:16px;">When I launched <a href="https://www.messina-enterprises.com" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600;">Messina Enterprises</a>, my marketing and consulting firm, I worked with clients who had deep expertise in their fields but couldn't crack social media. Wrong hashtags. Awkward spacing. No conversions. People with 20-year careers getting outposted by accounts with no credentials.</p>
-
-      <p style="font-size:15px;color:var(--body-text);line-height:1.75;margin-bottom:24px;">So I built PostAway. Not to replace social media managers or anyone building a real career in this space - but to make our workload go faster. Your expertise. Your voice. Your strategy. PostAway just gets it out the door quicker.</p>
-
-      <div style="display:block;max-width:200px;margin:20px 0 24px;font-family:'Dancing Script','Brush Script MT',cursive;font-size:28px;color:var(--purple-900);line-height:1.2;">Jennifer C. Messina</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="https://www.messina-enterprises.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--purple-50);border:1px solid var(--purple-100);color:var(--purple-700);text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:99px;font-family:'Poppins',sans-serif;">Messina Enterprises</a>
-        <a href="https://www.jennifercmessina.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--purple-50);border:1px solid var(--purple-100);color:var(--purple-700);text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:99px;font-family:'Poppins',sans-serif;">jennifercmessina.com</a>
+  <!-- PRICING -->
+  <section id="land-pricing" style="padding:72px 20px;">
+    <div style="max-width:720px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:48px;">
+        <h2 style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Simple, transparent pricing</h2>
+        <p style="font-size:16px;color:rgba(255,255,255,0.5);">Every paid plan includes a 5-day free trial. No credit card needed to sign up.</p>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;">
+        <!-- Free -->
+        <div class="land-price-card">
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Free</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Get started, no card needed</div>
+          <div style="margin-bottom:24px;">
+            <span style="font-size:36px;font-weight:800;color:#fff;">$0</span>
+          </div>
+          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Up to 10 posts</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Instagram only</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Basic scheduler</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Media library</li>
+          </ul>
+          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">Get Started</button>
+        </div>
+        <!-- Starter - highlighted -->
+        <div class="land-price-card" style="border:2px solid #7C3FCC;background:rgba(124,63,204,0.08);position:relative;">
+          <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#7C3FCC;color:#fff;font-size:11px;font-weight:800;padding:3px 14px;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Most Popular</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Starter</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">For serious creators</div>
+          <div style="margin-bottom:24px;">
+            <span style="font-size:36px;font-weight:800;color:#fff;">$12</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
+            <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px;">or $96/yr</div>
+          </div>
+          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Unlimited posts</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Instagram scheduling</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> AI caption generator</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Analytics</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> 5-day free trial</li>
+          </ul>
+          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 6px 20px rgba(124,63,204,0.4);">Start Free Trial</button>
+        </div>
+        <!-- Pro -->
+        <div class="land-price-card">
+          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Pro</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Instagram + TikTok</div>
+          <div style="margin-bottom:24px;">
+            <span style="font-size:36px;font-weight:800;color:#fff;">$24</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
+          </div>
+          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Everything in Starter</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> TikTok scheduling</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Cross-platform analytics</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Content randomizer</li>
+            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> 5-day free trial</li>
+          </ul>
+          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">Start Free Trial</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="land-faq" style="padding:0 20px 72px;background:rgba(0,0,0,0.2);">
+    <div style="max-width:600px;margin:0 auto;">
+      <h2 style="font-size:28px;font-weight:800;color:#fff;text-align:center;margin-bottom:36px;letter-spacing:-0.01em;">Frequently asked questions</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="land-faq-item" onclick="landFaq(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
+            <span>Which platforms does PostAway support?</span>
+            <span style="color:rgba(255,255,255,0.4);font-size:18px;transition:transform .2s;" class="land-faq-icon">+</span>
+          </div>
+          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">PostAway currently supports Instagram (Business and Creator accounts) and TikTok. Both platforms support auto-publishing, scheduling, and analytics.</div>
+        </div>
+        <div class="land-faq-item" onclick="landFaq(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
+            <span>Can I cancel my subscription anytime?</span>
+            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
+          </div>
+          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Yes, cancel anytime from your Profile settings. No long-term commitments required.</div>
+        </div>
+        <div class="land-faq-item" onclick="landFaq(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
+            <span>Does the free trial require a credit card?</span>
+            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
+          </div>
+          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Creating a free account requires no credit card. If you upgrade to a paid plan, the 5-day trial is included and you won't be charged until it ends.</div>
+        </div>
+        <div class="land-faq-item" onclick="landFaq(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
+            <span>How does auto-publishing work?</span>
+            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
+          </div>
+          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Connect your Instagram and TikTok accounts via OAuth, schedule your posts with captions and media, and PostAway publishes them at the exact time you set - no manual action needed. You'll get an email confirmation when each post goes live.</div>
+        </div>
+        <div class="land-faq-item" onclick="landFaq(this)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
+            <span>What kind of accounts can connect to Instagram?</span>
+            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
+          </div>
+          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Instagram requires a Business or Creator account connected to a Facebook Page to use the publishing API. Personal accounts cannot be connected. Switching is free and takes about 2 minutes in the Instagram app.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT JENNIFER -->
+  <section id="land-about" style="padding:0 20px 72px;">
+    <div style="max-width:600px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <h2 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.01em;margin-bottom:8px;">Why I built this</h2>
+        <p style="font-size:15px;color:rgba(255,255,255,0.45);">A tool born from service, performance, and years in the trenches of social media.</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;">
+        <div style="width:100%;height:280px;overflow:hidden;position:relative;">
+          <img src="https://jennifercmessina.com/wp-content/uploads/2022/02/IMG_1273-Jennifer-Messina.png" alt="Jennifer C. Messina" style="width:100%;height:100%;object-fit:cover;object-position:center 15%;">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(10,6,20,0.98) 100%);"></div>
+        </div>
+        <div style="padding:0 28px 28px;margin-top:-32px;position:relative;">
+          <div style="font-weight:800;font-size:20px;color:#fff;font-family:'Poppins',sans-serif;margin-bottom:6px;">Jennifer C. Messina</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:24px;">U.S. Army Veteran (Public Affairs) · Recording Artist · Actress · Founder, Messina Enterprises &amp; Messina Glam</div>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:14px;">I spent 14 years in the U.S. Army as a Public Affairs Officer. I learned that communication is not just a skill - it is a weapon, a bridge, and a brand.</p>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:14px;">When I launched <a href="https://www.messina-enterprises.com" target="_blank" style="color:#A78BFA;text-decoration:none;font-weight:600;">Messina Enterprises</a>, I worked with clients who had deep expertise in their fields but couldn't crack social media. Wrong hashtags. No conversions. People with 20-year careers getting outposted by accounts with no credentials.</p>
+          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:24px;">So I built PostAway. Not to replace social media managers - but to make our workload go faster. Your expertise. Your voice. PostAway just gets it out the door quicker.</p>
+          <div style="font-family:'Dancing Script','Brush Script MT',cursive;font-size:28px;color:#C4B5FD;margin-bottom:20px;">Jennifer C. Messina</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="https://www.messina-enterprises.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.3);color:#A78BFA;text-decoration:none;font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;">Messina Enterprises</a>
+            <a href="https://www.jennifercmessina.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.3);color:#A78BFA;text-decoration:none;font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;">jennifercmessina.com</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- BOTTOM CTA -->
-  <section style="padding:0 20px 56px;max-width:480px;margin:0 auto;">
-    <div style="background:linear-gradient(135deg,var(--purple-900),var(--purple-700));border-radius:24px;padding:40px 28px;text-align:center;">
-      <h2 style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:#fff;margin-bottom:12px;line-height:1.2;">Ready to post smarter?</h2>
-      <p style="color:rgba(255,255,255,0.75);font-size:15px;margin-bottom:28px;line-height:1.5;">Join creators who save hours every week with PostAway.</p>
-      <button onclick="showScreen('screen-signup')" style="background:#fff;color:var(--purple-700);border:none;border-radius:12px;padding:16px 32px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;max-width:280px;">Get Started Free</button>
+  <section style="padding:0 20px 72px;">
+    <div style="max-width:600px;margin:0 auto;background:linear-gradient(135deg,rgba(124,63,204,0.25),rgba(91,43,153,0.15));border:1px solid rgba(124,63,204,0.3);border-radius:24px;padding:52px 32px;text-align:center;">
+      <h2 style="font-size:30px;font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:-0.01em;">Ready to post smarter?</h2>
+      <p style="font-size:16px;color:rgba(255,255,255,0.5);margin-bottom:32px;line-height:1.6;">Join creators who save hours every week with PostAway.</p>
+      <button onclick="showScreen('screen-signup')" style="padding:16px 48px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 8px 28px rgba(124,63,204,0.45);">Get Started Free</button>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer style="padding:28px 24px;text-align:center;border-top:1px solid var(--border);color:var(--muted);font-size:12px;">
-    <div style="margin-bottom:10px;">
-      <a href="/privacy.html" style="color:var(--muted);text-decoration:none;margin:0 10px;">Privacy Policy</a>
-      <a href="/terms.html" style="color:var(--muted);text-decoration:none;margin:0 10px;">Terms of Service</a>
+  <footer style="padding:32px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.3);font-size:12px;">
+    <div style="margin-bottom:12px;">
+      <a href="/privacy.html" style="color:rgba(255,255,255,0.3);text-decoration:none;margin:0 12px;">Privacy Policy</a>
+      <a href="/terms.html" style="color:rgba(255,255,255,0.3);text-decoration:none;margin:0 12px;">Terms of Service</a>
     </div>
     <div style="margin-bottom:6px;">&copy; 2026 PostAway. All rights reserved.</div>
-    <div>Created by <a href="https://www.messina-enterprises.com" target="_blank" style="color:var(--gold);text-decoration:none;font-weight:600;">Messina Glam LLC</a></div>
+    <div>Created by <a href="https://www.messina-enterprises.com" target="_blank" style="color:#A78BFA;text-decoration:none;font-weight:600;">Messina Glam LLC</a></div>
   </footer>
+
+  <script>
+    function landScroll(id) {
+      var el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function landTab(name) {
+      ['queue','analytics','ai'].forEach(function(t) {
+        var el = document.getElementById('land-tab-' + t);
+        var btn = document.getElementById('ltab-' + t);
+        if (el) el.style.display = 'none';
+        if (btn) { btn.classList.remove('active'); }
+      });
+      var show = document.getElementById('land-tab-' + name);
+      var showBtn = document.getElementById('ltab-' + name);
+      if (show) show.style.display = name === 'analytics' ? 'block' : 'flex';
+      if (showBtn) showBtn.classList.add('active');
+    }
+    function landCalc() {
+      var val = parseInt(document.getElementById('land-post-slider').value);
+      document.getElementById('land-slider-val').innerText = val;
+      var hrs = (val * 0.75).toFixed(1);
+      var dollars = Math.round(parseFloat(hrs) * 50);
+      document.getElementById('land-hours-saved').innerText = hrs + ' hrs';
+      document.getElementById('land-dollars-saved').innerText = '$' + dollars + '/mo';
+    }
+    function landFaq(el) {
+      var ans = el.querySelector('.land-faq-answer');
+      var icon = el.querySelector('.land-faq-icon');
+      var open = ans.style.display !== 'none';
+      ans.style.display = open ? 'none' : 'block';
+      if (icon) icon.innerText = open ? '+' : '-';
+    }
+  </script>
 </div>
 
 <!-- ===== SCREEN: LOGIN ===== -->
