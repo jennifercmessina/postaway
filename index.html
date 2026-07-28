@@ -110,14 +110,29 @@
     .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-sec); margin-bottom: 8px; }
     .form-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
     .form-input:focus { border-color: var(--primary); }
-    .auth-center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; position: relative; overflow: hidden; }
-    .auth-center::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 700px; height: 700px; background: radial-gradient(circle, rgba(124,63,204,0.22) 0%, rgba(10,6,20,0) 70%); pointer-events: none; z-index: 0; }
-    .auth-center::after { content: ''; position: absolute; bottom: -80px; right: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(91,43,153,0.15) 0%, rgba(10,6,20,0) 70%); pointer-events: none; z-index: 0; }
-    .auth-card { width: 100%; max-width: 420px; padding: 40px 36px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; text-align: center; position: relative; z-index: 1; box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 60px rgba(124,63,204,0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-    .auth-tagline { font-family: 'Dancing Script', cursive; font-size: 1.1rem; color: var(--accent-light); margin-bottom: 28px; opacity: 0.85; }
-    .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-muted); font-size: 0.8rem; }
-    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
-    .platform-trust { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
+    /* AUTH SPLIT LAYOUT */
+    .auth-layout { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 768px) { .auth-layout { grid-template-columns: 1fr; } .auth-brand-panel { display: none; } }
+    .auth-brand-panel { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 60px 56px; background: linear-gradient(160deg, #0e0720 0%, #0A0614 60%, #130a24 100%); }
+    .auth-brand-panel::before { content: ''; position: absolute; top: -80px; left: -80px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,63,204,0.3) 0%, transparent 65%); pointer-events: none; }
+    .auth-brand-panel::after { content: ''; position: absolute; bottom: -120px; right: -60px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(91,43,153,0.2) 0%, transparent 65%); pointer-events: none; }
+    .auth-brand-content { position: relative; z-index: 1; }
+    .auth-brand-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 60px; }
+    .auth-brand-logo img { border-radius: 14px; box-shadow: 0 8px 28px rgba(124,63,204,0.5); }
+    .auth-brand-logo span { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    .auth-brand-headline { font-size: 2.8rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 16px; }
+    .auth-brand-headline em { font-style: normal; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .auth-brand-sub { font-size: 1rem; color: rgba(255,255,255,0.55); line-height: 1.6; margin-bottom: 48px; max-width: 340px; }
+    .auth-feature-list { display: flex; flex-direction: column; gap: 16px; }
+    .auth-feature-item { display: flex; align-items: center; gap: 14px; }
+    .auth-feature-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(124,63,204,0.2); border: 1px solid rgba(124,63,204,0.3); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .auth-feature-text { font-size: 0.9rem; color: rgba(255,255,255,0.75); font-weight: 500; }
+    /* AUTH FORM PANEL */
+    .auth-form-panel { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px 40px; background: var(--bg-dark); position: relative; overflow: hidden; }
+    .auth-form-panel::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; background: radial-gradient(circle, rgba(124,63,204,0.08) 0%, transparent 70%); pointer-events: none; }
+    .auth-card { width: 100%; max-width: 400px; position: relative; z-index: 1; }
+    .auth-tagline { font-family: 'Dancing Script', cursive; font-size: 1.05rem; color: var(--accent-light); margin-bottom: 4px; opacity: 0.85; display: block; }
+    .platform-trust { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
     .platform-trust-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
     .step-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); }
@@ -467,33 +482,62 @@
   <!-- SCREEN 2: LOGIN                            -->
   <!-- ========================================== -->
   <div id="screen-login" class="screen">
-    <div class="auth-center">
-      <div class="auth-card">
-        <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 5px; margin-bottom: 28px; text-align: left;">&larr; Back to home</a>
-        <img src="logo.png" width="52" height="52" style="border-radius:14px; box-shadow:0 8px 24px rgba(124,63,204,0.5);" alt="PostAway Logo">
-        <div style="font-weight: 800; font-size: 1.4rem; margin-top: 12px; letter-spacing: -0.02em;">PostAway</div>
-        <div class="auth-tagline">Your social media, on autopilot.</div>
-        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">Welcome back</h2>
-        <p style="color: var(--text-sec); font-size: 0.88rem; margin-bottom: 24px;">Sign in to your account to continue.</p>
-        <div class="form-group">
-          <label class="form-label" for="login-email">Email Address</label>
-          <input type="email" id="login-email" class="form-input" placeholder="name@example.com">
+    <div class="auth-layout">
+      <!-- Left brand panel -->
+      <div class="auth-brand-panel">
+        <div class="auth-brand-content">
+          <div class="auth-brand-logo">
+            <img src="logo.png" width="44" height="44" alt="PostAway">
+            <span>PostAway</span>
+          </div>
+          <div class="auth-brand-headline">Your social media,<br><em>on autopilot.</em></div>
+          <p class="auth-brand-sub">Schedule, auto-publish, and grow your Instagram and TikTok from one place. Never miss the algorithm again.</p>
+          <div class="auth-feature-list">
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#128197;</div>
+              <div class="auth-feature-text">Visual drag-and-drop scheduler</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#9889;</div>
+              <div class="auth-feature-text">Auto-publish to Instagram &amp; TikTok</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#129302;</div>
+              <div class="auth-feature-text">AI captions and hashtag generation</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#128200;</div>
+              <div class="auth-feature-text">Cross-platform analytics dashboard</div>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="login-pass">Password</label>
-          <input type="password" id="login-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
-        </div>
-        <button id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 14px; padding: 14px; font-size: 1rem;" onclick="doLogin()">Sign In</button>
-        <div style="margin-top: 18px; display: flex; justify-content: space-between; font-size: 0.83rem;">
-          <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-forgot'); return false;">Forgot password?</a>
-          <a href="#" style="color: var(--text-sec); text-decoration: none;" onclick="showScreen('screen-signup'); return false;">No account? <span style="color: var(--accent-light);">Sign up</span></a>
-        </div>
-        <div class="platform-trust">
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Works with</span>
-          <div class="platform-trust-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">&#128248;</div>
-          <span style="font-size: 0.75rem; color: var(--text-sec);">Instagram</span>
-          <div class="platform-trust-icon" style="background: #000; border: 1px solid rgba(255,255,255,0.15);">&#127925;</div>
-          <span style="font-size: 0.75rem; color: var(--text-sec);">TikTok</span>
+      </div>
+      <!-- Right form panel -->
+      <div class="auth-form-panel">
+        <div class="auth-card">
+          <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 5px; margin-bottom: 36px;">&larr; Back to home</a>
+          <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.03em;">Welcome back</h2>
+          <p style="color: var(--text-sec); font-size: 0.88rem; margin-bottom: 32px;">Sign in to your PostAway account.</p>
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-pass">Password</label>
+            <input type="password" id="login-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+          </div>
+          <button id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 14px; padding: 15px; font-size: 1rem;" onclick="doLogin()">Sign In</button>
+          <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 0.83rem;">
+            <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-forgot'); return false;">Forgot password?</a>
+            <a href="#" style="color: var(--text-sec); text-decoration: none;" onclick="showScreen('screen-signup'); return false;">No account? <span style="color: var(--accent-light);">Sign up free</span></a>
+          </div>
+          <div class="platform-trust">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Works with</span>
+            <div class="platform-trust-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">&#128248;</div>
+            <span style="font-size: 0.75rem; color: var(--text-sec);">Instagram</span>
+            <div class="platform-trust-icon" style="background: #111; border: 1px solid rgba(255,255,255,0.15);">&#127925;</div>
+            <span style="font-size: 0.75rem; color: var(--text-sec);">TikTok</span>
+          </div>
         </div>
       </div>
     </div>
@@ -503,34 +547,63 @@
   <!-- SCREEN 3: SIGNUP                           -->
   <!-- ========================================== -->
   <div id="screen-signup" class="screen">
-    <div class="auth-center">
-      <div class="auth-card">
-        <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 5px; margin-bottom: 28px; text-align: left;">&larr; Back to home</a>
-        <img src="logo.png" width="52" height="52" style="border-radius:14px; box-shadow:0 8px 24px rgba(124,63,204,0.5);" alt="PostAway Logo">
-        <div style="font-weight: 800; font-size: 1.4rem; margin-top: 12px; letter-spacing: -0.02em;">PostAway</div>
-        <div class="auth-tagline">Your social media, on autopilot.</div>
-        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em;">Start for free</h2>
-        <p style="color: var(--text-sec); font-size: 0.88rem; margin-bottom: 24px;">No credit card required. Cancel anytime.</p>
-        <div class="form-group">
-          <label class="form-label" for="signup-email">Email Address</label>
-          <input type="email" id="signup-email" class="form-input" placeholder="name@example.com">
+    <div class="auth-layout">
+      <!-- Left brand panel -->
+      <div class="auth-brand-panel">
+        <div class="auth-brand-content">
+          <div class="auth-brand-logo">
+            <img src="logo.png" width="44" height="44" alt="PostAway">
+            <span>PostAway</span>
+          </div>
+          <div class="auth-brand-headline">Stop posting<br>manually. <em>Ever.</em></div>
+          <p class="auth-brand-sub">Join creators who let PostAway handle their Instagram and TikTok so they can focus on what they're actually good at.</p>
+          <div class="auth-feature-list">
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#10003;</div>
+              <div class="auth-feature-text">Free plan - no credit card required</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#10003;</div>
+              <div class="auth-feature-text">Up to 10 posts/month on free tier</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#10003;</div>
+              <div class="auth-feature-text">5-day free trial on paid plans</div>
+            </div>
+            <div class="auth-feature-item">
+              <div class="auth-feature-icon">&#10003;</div>
+              <div class="auth-feature-text">Cancel anytime, no questions asked</div>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="signup-pass">Password</label>
-          <input type="password" id="signup-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+      </div>
+      <!-- Right form panel -->
+      <div class="auth-form-panel">
+        <div class="auth-card">
+          <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.8rem; text-decoration: none; display: flex; align-items: center; gap: 5px; margin-bottom: 36px;">&larr; Back to home</a>
+          <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.03em;">Start for free</h2>
+          <p style="color: var(--text-sec); font-size: 0.88rem; margin-bottom: 32px;">No credit card required. Cancel anytime.</p>
+          <div class="form-group">
+            <label class="form-label" for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" class="form-input" placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="signup-pass">Password</label>
+            <input type="password" id="signup-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+          </div>
+          <button id="signup-btn" class="btn btn-primary" style="width: 100%; margin-top: 14px; padding: 15px; font-size: 1rem;" onclick="doSignup()">Create Free Account</button>
+          <div style="margin-top: 20px; font-size: 0.83rem; color: var(--text-sec);">
+            Already have an account? <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-login'); return false;">Sign in</a>
+          </div>
+          <div class="platform-trust">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Works with</span>
+            <div class="platform-trust-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">&#128248;</div>
+            <span style="font-size: 0.75rem; color: var(--text-sec);">Instagram</span>
+            <div class="platform-trust-icon" style="background: #111; border: 1px solid rgba(255,255,255,0.15);">&#127925;</div>
+            <span style="font-size: 0.75rem; color: var(--text-sec);">TikTok</span>
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 16px; line-height: 1.5; text-align: center;">By creating an account you agree to our Terms of Service and Privacy Policy.</div>
         </div>
-        <button id="signup-btn" class="btn btn-primary" style="width: 100%; margin-top: 14px; padding: 14px; font-size: 1rem;" onclick="doSignup()">Create Free Account</button>
-        <div style="margin-top: 18px; font-size: 0.83rem; color: var(--text-sec);">
-          Already have an account? <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-login'); return false;">Sign in</a>
-        </div>
-        <div class="platform-trust">
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Works with</span>
-          <div class="platform-trust-icon" style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">&#128248;</div>
-          <span style="font-size: 0.75rem; color: var(--text-sec);">Instagram</span>
-          <div class="platform-trust-icon" style="background: #000; border: 1px solid rgba(255,255,255,0.15);">&#127925;</div>
-          <span style="font-size: 0.75rem; color: var(--text-sec);">TikTok</span>
-        </div>
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 16px; line-height: 1.5;">By signing up you agree to our Terms of Service and Privacy Policy.</div>
       </div>
     </div>
   </div>
