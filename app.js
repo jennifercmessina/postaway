@@ -550,15 +550,21 @@ function goStep(n) {
 // ---- AI CAPTIONS ----
 function renderCaptionList() {
   document.getElementById('caption-list').innerHTML = photos.map((p, i) => `
-    <div class="caption-card">
+    <div class="caption-card" id="caption-card-${i}">
       <div class="caption-card-head">
         <img class="caption-thumb" src="${p.url}" loading="lazy">
         <div>
           <div class="caption-num">Photo ${i + 1} of ${photos.length}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Type a note or let AI write it for you</div>
         </div>
       </div>
-      <textarea class="caption-input" id="cap-${i}" rows="3" oninput="photos[${i}].caption=this.value">${p.caption}</textarea>
-      <div style="margin-top:6px">${p.hashtags.split(' ').map(h => `<span class="hashtag-pill">${h}</span>`).join('')}</div>
+      <textarea class="caption-input" id="cap-${i}" rows="3" placeholder="Type a direction (e.g. &quot;sunset beach vibes&quot;) or leave blank for a fresh take..." oninput="photos[${i}].caption=this.value">${p.caption||''}</textarea>
+      <div id="ht-pills-${i}" style="margin-top:6px;min-height:24px;">${(p.hashtags||'').split(' ').filter(Boolean).map(h => `<span class="hashtag-pill">${h}</span>`).join('')}</div>
+      <div id="ai-loading-${i}" style="display:none;font-size:0.78rem;color:var(--accent-light);padding:6px 0;">&#10024; Generating...</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn" style="flex:1;font-size:0.75rem;padding:7px 10px;background:var(--primary-grad);color:#fff;border:none;" onclick="runAISingle(${i},'refine')">&#10024; Generate from my notes</button>
+        <button class="btn" style="flex:1;font-size:0.75rem;padding:7px 10px;background:rgba(255,255,255,0.07);color:var(--text-main);border:1px solid var(--border-subtle);" onclick="runAISingle(${i},'fresh')">&#127922; Surprise me</button>
+      </div>
     </div>`).join('');
 }
 
@@ -582,88 +588,128 @@ function setAIProvider(provider) {
   if (profileInput) profileInput.value = saved;
 }
 
-async function runAI() {
+async function callCaptionAI(imageB64, mediaType, userHint, mode) {
+  const SUPABASE_URL = 'https://aajkbqmzuqfzzugjmerp.supabase.co';
+  const hintLine = (mode === 'refine' && userHint && userHint.trim())
+    ? `\nThe creator has provided this direction: "${userHint.trim()}". Incorporate this tone/theme into the caption.`
+    : (mode === 'fresh' ? '\nIgnore any previous caption - write something completely fresh and surprising.' : '');
+
+  const prompt = `Analyze this luxury beauty photo and return EXACTLY this format with no other text:\nCAPTION: [2-3 sentence caption, aspirational and luxurious tone, end with "Link in bio", 1-2 relevant emojis, no em dashes, written as a premium beauty brand speaking to confident women]${hintLine}\nHASHTAGS: [exactly 5 hashtags: always start with #MessinaGlam, then pick 4 from: #GlazedDonutSkin #GlassSkin #SoftGlam #LatteMakeup #CleanGirlAesthetic #BronzedGlow #GlowySkin #LuxuryBeauty]`;
+
+  // Try server-side edge function first (no user API key needed)
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (token) {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-caption`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ imageB64, mediaType, prompt })
+      });
+      if (res.ok) {
+        const d = await res.json();
+        return d.text || '';
+      }
+    }
+  } catch (_) {}
+
+  // Fallback to user's own API key if they have one
+  const provider = localStorage.getItem('pf_ai_provider') || 'claude';
+  const key = localStorage.getItem('pf_api_key_' + provider) || localStorage.getItem('pf_api_key') || '';
+  if (!key) return null; // no key available
+
+  if (provider === 'claude') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-calls': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: mediaType, data: imageB64 } }, { type: 'text', text: prompt }] }] })
+    });
+    if (res.ok) { const d = await res.json(); return d.content[0].text.trim(); }
+  } else if (provider === 'chatgpt') {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'gpt-4o', max_tokens: 400, messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: 'data:' + mediaType + ';base64,' + imageB64 } }, { type: 'text', text: prompt }] }] })
+    });
+    if (res.ok) { const d = await res.json(); return d.choices[0].message.content.trim(); }
+  } else if (provider === 'gemini') {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mediaType, data: imageB64 } }, { text: prompt }] }], generationConfig: { maxOutputTokens: 400 } })
+    });
+    if (res.ok) { const d = await res.json(); return d.candidates[0].content.parts[0].text.trim(); }
+  }
+  return null;
+}
+
+function parseCaptionAIResponse(txt, index) {
+  if (!txt) return;
+  const capMatch = txt.match(/CAPTION:\s*(.+?)(?:\n|HASHTAGS:)/s);
+  const htMatch  = txt.match(/HASHTAGS:\s*(.+)/s);
+  if (capMatch) photos[index].caption  = capMatch[1].trim();
+  if (htMatch)  photos[index].hashtags = htMatch[1].trim();
+  // Update the DOM in place without full re-render
+  const ta = document.getElementById('cap-' + index);
+  const pills = document.getElementById('ht-pills-' + index);
+  if (ta) ta.value = photos[index].caption || '';
+  if (pills) pills.innerHTML = (photos[index].hashtags || '').split(' ').filter(Boolean).map(h => `<span class="hashtag-pill">${h}</span>`).join('');
+}
+
+async function runAISingle(index, mode) {
   const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
   if (!limits.canUseAI) { showUpgradePrompt('ai'); return; }
 
-  const provider = localStorage.getItem('pf_ai_provider') || 'claude';
-  const key = localStorage.getItem('pf_api_key_' + provider) || localStorage.getItem('pf_api_key') || '';
-  if (!key) { toast('Add your API key in Profile > AI Settings first', 'error'); switchTab('profile'); return; }
+  const p = photos[index];
+  if (!p) return;
+
+  const loading = document.getElementById('ai-loading-' + index);
+  const card = document.getElementById('caption-card-' + index);
+  if (loading) loading.style.display = 'block';
+  if (card) card.querySelectorAll('button').forEach(b => b.disabled = true);
+
+  try {
+    let b64, mediaType;
+    if (p.file) {
+      b64 = await fileToB64(p.file);
+      mediaType = p.file.type || 'image/jpeg';
+    } else if (p.uploadedUrl || p.url) {
+      // For library images fetch via proxy or skip vision, use hint-only prompt
+      b64 = null;
+      mediaType = 'image/jpeg';
+    }
+
+    const userHint = document.getElementById('cap-' + index)?.value || p.caption || '';
+    const txt = await callCaptionAI(b64, mediaType, userHint, mode);
+    if (txt) {
+      parseCaptionAIResponse(txt, index);
+      toast('Caption generated', 'success');
+    } else {
+      toast('Could not generate - check AI settings in Profile', 'error');
+    }
+  } catch (e) {
+    toast('Generation failed', 'error');
+  }
+
+  if (loading) loading.style.display = 'none';
+  if (card) card.querySelectorAll('button').forEach(b => b.disabled = false);
+}
+
+async function runAI(mode) {
+  const limits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
+  if (!limits.canUseAI) { showUpgradePrompt('ai'); return; }
 
   const btn = document.getElementById('ai-gen-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  const btn2 = document.getElementById('ai-gen-btn-fresh');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Generating...'; }
+  if (btn2) btn2.disabled = true;
 
-  const prompt = 'Analyze this luxury beauty product photo and return EXACTLY this format with no other text:\nCAPTION: [2-3 sentence caption, aspirational and luxurious tone, end with "Link in bio", 1-2 relevant emojis, no dashes, written as a premium beauty brand speaking to confident women]\nHASHTAGS: [exactly 5 hashtags: always start with #MessinaGlam, then pick 4 from these top trending 2026 Instagram luxury beauty aesthetics that best match this photo: #GlazedDonutSkin #GlassSkin #SoftGlam #LatteMakeup #CleanGirlAesthetic #BronzedGlow #GlowySkin #LuxuryBeauty]';
-
-  const tasks = photos.map(async (p, i) => {
-    try {
-      const b64 = await fileToB64(p.file);
-      const mediaType = p.file.type || 'image/jpeg';
-      let txt = '';
-
-      if (provider === 'claude') {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-calls': 'true'
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 400,
-            messages: [{ role: 'user', content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
-              { type: 'text', text: prompt }
-            ]}]
-          })
-        });
-        if (res.ok) { const d = await res.json(); txt = d.content[0].text.trim(); }
-
-      } else if (provider === 'chatgpt') {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-          body: JSON.stringify({
-            model: 'gpt-4o',
-            max_tokens: 400,
-            messages: [{ role: 'user', content: [
-              { type: 'image_url', image_url: { url: 'data:' + mediaType + ';base64,' + b64 } },
-              { type: 'text', text: prompt }
-            ]}]
-          })
-        });
-        if (res.ok) { const d = await res.json(); txt = d.choices[0].message.content.trim(); }
-
-      } else if (provider === 'gemini') {
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + key, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [
-              { inline_data: { mime_type: mediaType, data: b64 } },
-              { text: prompt }
-            ]}],
-            generationConfig: { maxOutputTokens: 400 }
-          })
-        });
-        if (res.ok) { const d = await res.json(); txt = d.candidates[0].content.parts[0].text.trim(); }
-      }
-
-      if (txt) {
-        const capMatch = txt.match(/CAPTION:\s*(.+?)(?:\n|HASHTAGS:)/s);
-        const htMatch  = txt.match(/HASHTAGS:\s*(.+)/s);
-        if (capMatch) photos[i].caption  = capMatch[1].trim();
-        if (htMatch)  photos[i].hashtags = htMatch[1].trim();
-      }
-    } catch (_) {}
-  });
-
+  const tasks = photos.map((_, i) => runAISingle(i, mode || 'fresh'));
   await Promise.all(tasks);
-  btn.disabled = false; btn.textContent = 'Generate';
-  renderCaptionList();
-  toast('AI captions generated', 'success');
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '&#10024; Generate from my notes'; }
+  if (btn2) { btn2.disabled = false; }
+  toast('All captions generated', 'success');
 }
 
 function fileToB64(file) {

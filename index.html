@@ -793,14 +793,17 @@
           <p style="font-size: 0.82rem; color: var(--text-sec); margin-bottom: 16px;">Each photo needs a caption and hashtags before scheduling. Use AI to generate them instantly, or write your own below.</p>
           <div id="ai-nudge-msg" style="display: none;"></div>
           <div style="background: linear-gradient(135deg, rgba(124,63,204,0.18), rgba(91,43,153,0.12)); border: 1px solid rgba(124,63,204,0.35); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
               <span style="font-size: 1.4rem;">&#10024;</span>
               <div>
-                <div style="font-weight: 700; font-size: 0.95rem;">Generate captions with AI</div>
-                <div style="font-size: 0.78rem; color: var(--text-sec);">PostAway writes a unique caption + hashtag set for each photo in seconds.</div>
+                <div style="font-weight: 700; font-size: 0.95rem;">Generate captions for all photos</div>
+                <div style="font-size: 0.78rem; color: var(--text-sec);">Type a direction in any box below, or let AI write from scratch.</div>
               </div>
             </div>
-            <button id="ai-gen-btn" class="btn btn-primary" style="width: 100%;" onclick="runAI()">&#10024; Generate Captions for All Photos</button>
+            <div style="display: flex; gap: 8px;">
+              <button id="ai-gen-btn" class="btn btn-primary" style="flex: 1; font-size: 0.82rem;" onclick="runAI('refine')">&#10024; Generate from my notes</button>
+              <button id="ai-gen-btn-fresh" class="btn" style="flex: 1; font-size: 0.82rem; background: rgba(255,255,255,0.07); border: 1px solid var(--border-subtle); color: var(--text-main);" onclick="runAI('fresh')">&#127922; Surprise me</button>
+            </div>
           </div>
           <div id="caption-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
           <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="goStep(2)">Continue to Schedule Settings &rarr;</button>
