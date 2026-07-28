@@ -1044,6 +1044,13 @@ function saveApiKey() {
 
 // ---- SUBSCRIPTION ----
 async function loadSubscription() {
+  // Developer account - always pro
+  if (user && user.email === 'business@jennifercmessina.com') {
+    userPlan = 'pro';
+    updatePlanUI();
+    return;
+  }
+
   try {
     const { data } = await sb.from('subscriptions').select('*').eq('user_id', user.id).maybeSingle();
     if (data && data.status !== 'cancelled') {

@@ -780,13 +780,21 @@
           <button id="step0-next" class="btn btn-primary" style="width: 100%; margin-top: 20px; display: none;" onclick="goStep(1)">Continue to AI Captions &rarr;</button>
         </div>
         <div id="sched-step-1" class="step-panel">
-          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 2: AI Captions</h3>
-          <div id="ai-nudge-msg" class="glass-card" style="padding: 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-sec);">
-            &#128161; Add your AI API key in Profile settings for custom AI generation.
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">Step 2: Write Your Captions</h3>
+          <p style="font-size: 0.82rem; color: var(--text-sec); margin-bottom: 16px;">Each photo needs a caption and hashtags before scheduling. Use AI to generate them instantly, or write your own below.</p>
+          <div id="ai-nudge-msg" style="display: none;"></div>
+          <div style="background: linear-gradient(135deg, rgba(124,63,204,0.18), rgba(91,43,153,0.12)); border: 1px solid rgba(124,63,204,0.35); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <span style="font-size: 1.4rem;">&#10024;</span>
+              <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">Generate captions with AI</div>
+                <div style="font-size: 0.78rem; color: var(--text-sec);">PostAway writes a unique caption + hashtag set for each photo in seconds.</div>
+              </div>
+            </div>
+            <button id="ai-gen-btn" class="btn btn-primary" style="width: 100%;" onclick="runAI()">&#10024; Generate Captions for All Photos</button>
           </div>
-          <button id="ai-gen-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 20px;" onclick="runAI()">&#10024; Generate AI Captions</button>
           <div id="caption-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
-          <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="goStep(2)">Continue to Schedule Config &rarr;</button>
+          <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="goStep(2)">Continue to Schedule Settings &rarr;</button>
         </div>
         <div id="sched-step-2" class="step-panel">
           <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 3: Schedule Settings</h3>
