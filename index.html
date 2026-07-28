@@ -2,1124 +2,1003 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PostAway — Social Media Auto-Pilot for Instagram & TikTok</title>
+
+  <!-- PWA & Meta Tags -->
+  <meta name="description" content="Schedule, auto-publish, and grow your Instagram and TikTok accounts on autopilot.">
+  <meta name="theme-color" content="#0A0614">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PostAway">
-  <meta name="theme-color" content="#7C3FCC">
-  <title>PostAway</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/svg+xml" href="postaway-icon.svg">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" href="logo.png">
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Main Stylesheet -->
   <link rel="stylesheet" href="styles.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0A0614;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-elevated: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --primary: #7C3FCC;
+      --primary-grad: linear-gradient(135deg, #7C3FCC, #5B2B99);
+      --accent-light: #A78BFA;
+      --accent-soft: #C4B5FD;
+      --text-main: #FFFFFF;
+      --text-sec: rgba(255, 255, 255, 0.6);
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --border-subtle: rgba(255, 255, 255, 0.09);
+      --border-accent: rgba(124, 63, 204, 0.3);
+      --success: #4ade80;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .screen { position: fixed; inset: 0; display: none; overflow-y: auto; background-color: var(--bg-dark); z-index: 10; }
+    .screen.active { display: flex; flex-direction: column; }
+    .glass-card { background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 14px; }
+    .grad-text { background: linear-gradient(135deg, #C4B5FD 0%, #7C3FCC 50%, #A78BFA 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; font-size: 0.95rem; font-weight: 600; border-radius: 99px; border: none; cursor: pointer; transition: all 0.25s ease; text-decoration: none; color: #fff; }
+    .btn-primary { background: var(--primary-grad); box-shadow: 0 8px 28px rgba(124,63,204,0.4); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(124,63,204,0.55); }
+    .btn-ghost { background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); color: var(--text-main); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .btn-gold { background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; box-shadow: 0 6px 20px rgba(245,158,11,0.3); }
+    .btn-danger { background: rgba(248,113,113,0.15); color: var(--danger); border: 1px solid rgba(248,113,113,0.3); }
+    @keyframes pulseGlow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.08); } }
+    .hero-glow { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,63,204,0.25) 0%, rgba(10,6,20,0) 70%); pointer-events: none; z-index: 0; animation: pulseGlow 8s ease-in-out infinite; }
+    .land-nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; background: rgba(10,6,20,0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle); }
+    .land-nav-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; color: #fff; cursor: pointer; }
+    .land-nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .land-nav-links a { color: var(--text-sec); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .land-nav-links a:hover { color: #fff; }
+    .land-nav-actions { display: flex; align-items: center; gap: 12px; }
+    .land-section { position: relative; max-width: 1140px; margin: 0 auto; padding: 80px 24px; z-index: 1; }
+    .hero-content { text-align: center; max-width: 800px; margin: 0 auto 60px auto; }
+    .pulsing-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 99px; background: rgba(124,63,204,0.15); border: 1px solid var(--border-accent); color: var(--accent-soft); font-size: 0.85rem; font-weight: 600; margin-bottom: 24px; }
+    .pulsing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 10px var(--success); }
+    .hero-h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.15; margin-bottom: 20px; letter-spacing: -0.02em; }
+    .hero-sub { font-size: 1.2rem; color: var(--text-sec); line-height: 1.6; margin-bottom: 36px; max-width: 660px; margin-left: auto; margin-right: auto; }
+    .hero-cta-group { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .mockup-container { background: rgba(15,10,30,0.8); border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(124,63,204,0.15); overflow: hidden; margin-top: 20px; }
+    .mockup-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border-subtle); }
+    .mockup-dots { display: flex; gap: 8px; }
+    .mockup-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+    .mockup-tabs { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 10px; }
+    .land-tab-btn { padding: 6px 16px; font-size: 0.85rem; font-weight: 600; border: none; background: transparent; color: var(--text-sec); border-radius: 7px; cursor: pointer; transition: all 0.2s; }
+    .land-tab-btn.active { background: var(--primary); color: #fff; }
+    .mockup-body { padding: 24px; min-height: 280px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 40px; }
+    .feature-card { padding: 28px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; transition: transform 0.25s, border-color 0.25s; }
+    .feature-card:hover { transform: translateY(-3px); border-color: var(--border-accent); }
+    .feature-icon { font-size: 2rem; margin-bottom: 16px; display: inline-block; }
+    .feature-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 0.95rem; color: var(--text-sec); line-height: 1.5; }
+    .calc-card { background: linear-gradient(135deg, rgba(124,63,204,0.1), rgba(255,255,255,0.03)); border: 1px solid var(--border-accent); border-radius: 20px; padding: 40px; text-align: center; margin-top: 40px; }
+    .calc-slider { width: 100%; max-width: 450px; accent-color: var(--primary); margin: 20px 0; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
+    .pricing-card { position: relative; padding: 36px 28px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+    .pricing-card.popular { border: 2px solid var(--primary); background: linear-gradient(180deg, rgba(124,63,204,0.12) 0%, rgba(255,255,255,0.04) 100%); box-shadow: 0 10px 40px rgba(124,63,204,0.25); }
+    .popular-badge { position: absolute; top: -14px; right: 24px; background: var(--primary-grad); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 4px 14px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .faq-list { max-width: 800px; margin: 40px auto 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .faq-item { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px 24px; cursor: pointer; }
+    .faq-header { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 1.05rem; }
+    .land-faq-answer { margin-top: 14px; color: var(--text-sec); font-size: 0.95rem; line-height: 1.6; }
+    .about-card { display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: center; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 40px; margin-top: 40px; }
+    .about-img { width: 100%; border-radius: 16px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .signature { font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: var(--accent-light); margin-top: 20px; }
+    .app-nav-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: rgba(10,6,20,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; z-index: 50; }
+    .app-main-body { flex: 1; padding-bottom: 90px; overflow-y: auto; }
+    .tab-panel { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+    .tab-panel.active { display: block; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(10,6,20,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-around; align-items: center; z-index: 90; padding: 0 8px; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); font-size: 0.72rem; font-weight: 600; background: none; border: none; cursor: pointer; flex: 1; height: 100%; transition: color 0.2s; }
+    .tab-item.active { color: var(--accent-light); }
+    .tab-item svg { width: 22px; height: 22px; fill: currentColor; }
+    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-sec); margin-bottom: 8px; }
+    .form-input { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: var(--primary); }
+    .auth-center { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .auth-card { width: 100%; max-width: 420px; padding: 36px 28px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; text-align: center; }
+    .step-dots { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+    .dot.active { background: var(--primary); width: 24px; border-radius: 99px; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .day-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+    .day-chip { padding: 8px 14px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); font-size: 0.85rem; cursor: pointer; }
+    .day-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .platform-pills, .ai-pills { display: flex; gap: 10px; margin: 12px 0; }
+    .platform-pill, .ai-pill { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle); text-align: center; font-size: 0.85rem; cursor: pointer; }
+    .platform-pill.active, .ai-pill.active { background: var(--primary-grad); border-color: var(--primary); color: #fff; }
+    .toggle-wrap { display: flex; align-items: center; justify-content: space-between; margin: 16px 0; }
+    .toggle { position: relative; display: inline-block; width: 48px; height: 26px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-knob { position: absolute; cursor: pointer; inset: 0; background-color: rgba(255,255,255,0.15); border-radius: 99px; transition: .3s; }
+    .toggle-knob:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: .3s; }
+    input:checked + .toggle-knob { background-color: var(--primary); }
+    input:checked + .toggle-knob:before { transform: translateX(22px); }
+    .media-grid, .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .media-item { aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: rgba(255,255,255,0.05); position: relative; }
+    .media-item img { width: 100%; height: 100%; object-fit: cover; }
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(20,15,35,0.95); border: 1px solid var(--primary); color: #fff; padding: 12px 24px; border-radius: 99px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 999; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+    @media (max-width: 768px) {
+      .hero-h1 { font-size: 2.4rem; }
+      .about-card { grid-template-columns: 1fr; text-align: center; }
+      .about-img { max-width: 200px; margin: 0 auto; }
+      .land-nav-links { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+  <!-- TOAST -->
+  <div id="toast" class="toast">Action completed successfully</div>
 
-<!-- ===== SCREEN: LANDING ===== -->
-<style>
-  @keyframes pa-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  .pa-pulse { animation: pa-pulse 2s infinite; }
-  .land-nav-link { color:rgba(255,255,255,0.55); text-decoration:none; font-size:14px; font-weight:500; transition:color .2s; }
-  .land-nav-link:hover { color:#fff; }
-  .land-feat-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:20px; padding:28px; transition:border-color .25s; }
-  .land-feat-card:hover { border-color:rgba(124,63,204,0.5); }
-  .land-price-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:32px; display:flex; flex-direction:column; }
-  .land-faq-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:14px; overflow:hidden; cursor:pointer; }
-  .land-tab-btn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; transition:all .2s; }
-  .land-tab-btn.active { background:#7C3FCC; color:#fff; }
-  .land-tab-btn:not(.active) { background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.5); }
-</style>
-<div class="screen active" id="screen-landing" style="overflow-y:auto;background:#0A0614;color:#fff;font-family:'Poppins',-apple-system,sans-serif;">
-
-  <!-- NAV -->
-  <nav style="position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(10,6,20,0.82);border-bottom:1px solid rgba(124,63,204,0.18);">
-    <div style="max-width:1100px;margin:0 auto;padding:0 20px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-      <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" width="34" height="34" alt="PostAway" style="border-radius:9px;box-shadow:0 4px 14px rgba(124,63,204,0.4);">
-        <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.01em;">PostAway</span>
+  <!-- UPGRADE MODAL -->
+  <div id="upgrade-modal" class="modal-overlay" style="display: none;">
+    <div class="glass-card" style="width: 100%; max-width: 500px; padding: 32px; border-radius: 24px 24px 0 0; border-bottom: none;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 2.5rem;">✦</span>
+        <h3 style="font-size: 1.4rem; font-weight: 800; margin-top: 8px;">Unlock PostAway Pro</h3>
+        <p id="upgrade-modal-msg" style="color: var(--text-sec); font-size: 0.9rem; margin-top: 6px;">Upgrade your plan to auto-publish across both Instagram and TikTok with AI features.</p>
       </div>
-      <!-- Center nav links (hidden on small screens via JS resize handled below) -->
-      <div id="land-nav-links" style="display:flex;gap:24px;align-items:center;">
-        <a href="#" class="land-nav-link" onclick="landScroll('land-features');return false;">Features</a>
-        <a href="#" class="land-nav-link" onclick="landScroll('land-preview');return false;">Preview</a>
-        <a href="#" class="land-nav-link" onclick="landScroll('land-pricing');return false;">Pricing</a>
-        <a href="#" class="land-nav-link" onclick="landScroll('land-faq');return false;">FAQ</a>
-        <a href="#" class="land-nav-link" onclick="landScroll('land-about');return false;">About</a>
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border-subtle); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700;">Starter Plan</div>
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Instagram auto-publish + AI Captions</div>
+          </div>
+          <button class="btn btn-ghost" style="padding: 8px 16px; font-size: 0.85rem;" onclick="startCheckout('price_1TxGT0BDiYRcrvlHpnE3PBHF')">$12/mo</button>
+        </div>
+        <div style="background: rgba(124,63,204,0.15); border: 2px solid var(--primary); padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700;">Pro Plan <span style="font-size: 0.7rem; background: var(--primary); padding: 2px 8px; border-radius: 99px; margin-left: 6px;">RECOMMENDED</span></div>
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Instagram + TikTok + Content Randomizer</div>
+          </div>
+          <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="startCheckout('price_1TxGVZBDiYRcrvlHpUEIgEfR')">$24/mo</button>
+        </div>
       </div>
-      <!-- Right CTAs -->
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <button onclick="showScreen('screen-login')" style="background:none;border:none;color:rgba(255,255,255,0.65);font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;font-family:'Poppins',sans-serif;">Sign In</button>
-        <button onclick="showScreen('screen-signup')" style="background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 16px rgba(124,63,204,0.35);">Get Started Free</button>
-      </div>
+      <button class="btn btn-ghost" style="width: 100%; border: none;" onclick="closeUpgradeModal()">Not now</button>
     </div>
-  </nav>
+  </div>
 
-  <!-- HERO -->
-  <section style="padding:72px 20px 64px;text-align:center;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:rgba(124,63,204,0.13);border-radius:50%;filter:blur(110px);pointer-events:none;"></div>
-    <div style="position:relative;z-index:1;max-width:640px;margin:0 auto;">
-      <!-- Badge -->
-      <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.35);border-radius:99px;margin-bottom:28px;">
-        <span class="pa-pulse" style="width:7px;height:7px;background:#A78BFA;border-radius:50%;display:inline-block;"></span>
-        <span style="font-size:13px;color:#C4B5FD;font-weight:600;">Instagram + TikTok auto-publishing is live</span>
+  <!-- ========================================== -->
+  <!-- SCREEN 1: LANDING PAGE                     -->
+  <!-- ========================================== -->
+  <div id="screen-landing" class="screen active">
+    <div class="hero-glow"></div>
+
+    <nav class="land-nav">
+      <div class="land-nav-brand" onclick="showScreen('screen-landing')">
+        <img src="logo.png" width="34" height="34" style="border-radius:9px; box-shadow:0 4px 14px rgba(124,63,204,0.4);" alt="PostAway Logo">
+        <span>PostAway</span>
       </div>
-      <!-- Headline -->
-      <h1 style="font-size:clamp(36px,8vw,60px);font-weight:800;line-height:1.1;letter-spacing:-0.025em;color:#fff;margin-bottom:22px;">
-        Put your social media<br>on <span style="background:linear-gradient(135deg,#C4B5FD,#7C3FCC,#4C1D95);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Autopilot.</span>
-      </h1>
-      <!-- Sub -->
-      <p style="font-size:18px;color:rgba(255,255,255,0.55);line-height:1.65;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto;">
-        Schedule, auto-publish, and grow your Instagram and TikTok from one app. Never miss the algorithm again.
+      <ul class="land-nav-links">
+        <li><a href="#" onclick="landScroll('land-features'); return false;">Features</a></li>
+        <li><a href="#" onclick="landScroll('land-preview'); return false;">Preview</a></li>
+        <li><a href="#" onclick="landScroll('land-pricing'); return false;">Pricing</a></li>
+        <li><a href="#" onclick="landScroll('land-faq'); return false;">FAQ</a></li>
+        <li><a href="#" onclick="landScroll('land-about'); return false;">About</a></li>
+      </ul>
+      <div class="land-nav-actions">
+        <button class="btn btn-ghost" style="padding: 8px 18px; font-size: 0.85rem;" onclick="showScreen('screen-login')">Sign In</button>
+        <button class="btn btn-primary" style="padding: 8px 18px; font-size: 0.85rem;" onclick="showScreen('screen-signup')">Get Started Free</button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="land-section">
+      <div class="hero-content">
+        <div class="pulsing-badge">
+          <span class="pulsing-dot"></span>
+          Instagram + TikTok auto-publishing is live
+        </div>
+        <h1 class="hero-h1">Put your social media on <span class="grad-text">Autopilot.</span></h1>
+        <p class="hero-sub">Schedule, auto-publish, and grow your Instagram and TikTok from one app. Never miss the algorithm again.</p>
+        <div class="hero-cta-group">
+          <button class="btn btn-primary" style="padding: 14px 32px; font-size: 1rem;" onclick="showScreen('screen-signup')">Get Started Free &rarr;</button>
+          <button class="btn btn-ghost" style="padding: 14px 28px; font-size: 1rem;" onclick="showScreen('screen-login')">Already have an account? Sign in</button>
+        </div>
+      </div>
+
+      <!-- Mockup Preview -->
+      <div id="land-preview" class="mockup-container">
+        <div class="mockup-header">
+          <div class="mockup-dots">
+            <div class="mockup-dot" style="background:#ff5f56;"></div>
+            <div class="mockup-dot" style="background:#ffbd2e;"></div>
+            <div class="mockup-dot" style="background:#27c93f;"></div>
+          </div>
+          <div class="mockup-tabs">
+            <button class="land-tab-btn active" onclick="landTab('queue', this)">Queue</button>
+            <button class="land-tab-btn" onclick="landTab('analytics', this)">Analytics</button>
+            <button class="land-tab-btn" onclick="landTab('captions', this)">AI Captions</button>
+          </div>
+        </div>
+        <div class="mockup-body">
+          <div id="land-mock-queue" class="land-tab-content">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); padding: 8px; border-radius: 8px;">&#128248;</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.95rem;">Instagram Reel &mdash; Product Launch Teaser</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sec);">Scheduled for Today at 5:00 PM</div>
+                  </div>
+                </div>
+                <span style="font-size: 0.75rem; background: rgba(74,222,128,0.15); color: var(--success); padding: 4px 10px; border-radius: 99px;">Ready</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="background: #000; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">&#127925;</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.95rem;">TikTok Post &mdash; Behind the Scenes Vlog</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sec);">Scheduled for Tomorrow at 9:00 AM</div>
+                  </div>
+                </div>
+                <span style="font-size: 0.75rem; background: rgba(74,222,128,0.15); color: var(--success); padding: 4px 10px; border-radius: 99px;">Ready</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border-subtle);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <span style="background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); padding: 8px; border-radius: 8px;">&#128444;&#65039;</span>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.95rem;">Instagram Carousel &mdash; 5 Growth Hacks</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sec);">Drafting content...</div>
+                  </div>
+                </div>
+                <span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); color: var(--text-sec); padding: 4px 10px; border-radius: 99px;">Draft</span>
+              </div>
+            </div>
+          </div>
+          <div id="land-mock-analytics" class="land-tab-content" style="display: none;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+              <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle); text-align: center;">
+                <div style="font-size: 0.8rem; color: var(--text-sec);">Posts Published</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;" class="grad-text">148</div>
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">+18% this month</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle); text-align: center;">
+                <div style="font-size: 0.8rem; color: var(--text-sec);">Total Reach</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;" class="grad-text">84.2K</div>
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">+32% reach rate</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle); text-align: center;">
+                <div style="font-size: 0.8rem; color: var(--text-sec);">Engagement Rate</div>
+                <div style="font-size: 1.8rem; font-weight: 800; margin-top: 6px;" class="grad-text">6.4%</div>
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">Instagram &amp; TikTok</div>
+              </div>
+            </div>
+          </div>
+          <div id="land-mock-captions" class="land-tab-content" style="display: none;">
+            <div style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+              <div style="font-size: 0.85rem; color: var(--accent-light); margin-bottom: 8px;">Prompt: "High-energy caption for a modern social media productivity tool"</div>
+              <div style="font-size: 0.95rem; line-height: 1.5; color: var(--text-main);">
+                "Stop spending 3 hours a day manually uploading clips! &#128640; Automate your Instagram Reels and TikTok videos in one single click with PostAway. Set your schedule once and let the auto-pilot algorithm do the heavy lifting. &#128293;<br><br>#SocialMediaAutomation #ContentCreatorTools #InstagramTips #TikTokGrowth"
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="land-features" class="land-section">
+      <div style="text-align: center; max-width: 600px; margin: 0 auto 40px auto;">
+        <h2 style="font-size: 2.2rem; font-weight: 800;">Built for content momentum</h2>
+        <p style="color: var(--text-sec); margin-top: 10px;">Everything you need to maintain a relentless posting schedule without burnout.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon">&#128197;</div><div class="feature-title">Visual Scheduler</div><div class="feature-desc">Pick your days and times. PostAway automatically publishes directly to Instagram and TikTok.</div></div>
+        <div class="feature-card"><div class="feature-icon">&#10024;</div><div class="feature-title">AI Captions</div><div class="feature-desc">Generate engaging, platform-customized captions and high-conversion hashtag sets in seconds.</div></div>
+        <div class="feature-card"><div class="feature-icon">&#128444;&#65039;</div><div class="feature-title">Media Library</div><div class="feature-desc">Upload photos and videos once, organize in cloud storage, and reuse content whenever needed.</div></div>
+        <div class="feature-card"><div class="feature-icon">&#128202;</div><div class="feature-title">Cross Analytics</div><div class="feature-desc">Track overall reach, follower growth, and engagement metrics specifically for Instagram and TikTok.</div></div>
+        <div class="feature-card"><div class="feature-icon">&#127922;</div><div class="feature-title">Content Randomizer</div><div class="feature-desc">Shuffle your media library into optimal, varied posting sequences so your feed never feels repetitive.</div></div>
+        <div class="feature-card"><div class="feature-icon">&#128276;</div><div class="feature-title">Email Alerts</div><div class="feature-desc">Receive real-time notifications for every post confirmation or execution issue.</div></div>
+      </div>
+    </section>
+
+    <!-- ROI Calculator -->
+    <section class="land-section">
+      <div class="calc-card">
+        <h2 style="font-size: 2rem; font-weight: 800;">Calculate Your Time Saved</h2>
+        <p style="color: var(--text-sec); margin-top: 8px;">See how much time and money PostAway saves you every single month.</p>
+        <div style="margin: 30px 0;">
+          <div id="land-slider-val" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-light);">15 posts/week</div>
+          <input type="range" id="land-post-slider" class="calc-slider" min="5" max="50" value="15" oninput="landCalc()">
+        </div>
+        <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-sec);">Hours Saved / Month</div>
+            <div id="land-hours-saved" style="font-size: 2.5rem; font-weight: 800; color: #fff;">45 hrs</div>
+          </div>
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-sec);">Value Saved ($50/hr)</div>
+            <div id="land-dollars-saved" style="font-size: 2.5rem; font-weight: 800;" class="grad-text">$2,250</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="land-pricing" class="land-section">
+      <div style="text-align: center; max-width: 600px; margin: 0 auto 40px auto;">
+        <h2 style="font-size: 2.2rem; font-weight: 800;">Simple, transparent pricing</h2>
+        <p style="color: var(--text-sec); margin-top: 10px;">Start for free and scale as your social presence grows.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div>
+            <div style="font-size: 1.2rem; font-weight: 700;">Free</div>
+            <div style="font-size: 2.2rem; font-weight: 800; margin: 12px 0;">$0</div>
+            <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 20px;">Ideal for getting started with basic scheduling.</p>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: var(--text-sec);">
+              <li>&#10003; Up to 10 scheduled posts</li>
+              <li>&#10003; Instagram integration</li>
+              <li>&#10003; Basic visual scheduler</li>
+            </ul>
+          </div>
+          <button class="btn btn-ghost" style="width: 100%; margin-top: 28px;" onclick="showScreen('screen-signup')">Get Started Free</button>
+        </div>
+        <div class="pricing-card popular">
+          <div class="popular-badge">Most Popular</div>
+          <div>
+            <div style="font-size: 1.2rem; font-weight: 700;">Starter</div>
+            <div style="font-size: 2.2rem; font-weight: 800; margin: 12px 0;">$12<span style="font-size: 1rem; color: var(--text-sec);">/mo</span></div>
+            <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 20px;">Or $96/year. Includes 5-day free trial.</p>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: var(--text-main);">
+              <li>&#10003; Unlimited posts</li>
+              <li>&#10003; Instagram auto-publishing</li>
+              <li>&#10003; AI Captions &amp; Hashtags</li>
+              <li>&#10003; Basic analytics</li>
+            </ul>
+          </div>
+          <button class="btn btn-primary" style="width: 100%; margin-top: 28px;" onclick="showScreen('screen-signup')">Start Free Trial</button>
+        </div>
+        <div class="pricing-card">
+          <div>
+            <div style="font-size: 1.2rem; font-weight: 700;">Pro</div>
+            <div style="font-size: 2.2rem; font-weight: 800; margin: 12px 0;">$24<span style="font-size: 1rem; color: var(--text-sec);">/mo</span></div>
+            <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 20px;">Full power for creators. Includes 5-day free trial.</p>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem; color: var(--text-main);">
+              <li>&#10003; Everything in Starter</li>
+              <li>&#10003; TikTok auto-publishing</li>
+              <li>&#10003; Cross-platform analytics</li>
+              <li>&#10003; Content Randomizer tool</li>
+            </ul>
+          </div>
+          <button class="btn btn-ghost" style="width: 100%; margin-top: 28px;" onclick="showScreen('screen-signup')">Start Free Trial</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="land-faq" class="land-section">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h2 style="font-size: 2.2rem; font-weight: 800;">Frequently Asked Questions</h2>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item" onclick="landFaq(this)">
+          <div class="faq-header"><span>Which platforms does PostAway support?</span><span class="land-faq-icon">+</span></div>
+          <div class="land-faq-answer" style="display: none;">PostAway supports Instagram (Business or Creator accounts) and TikTok directly via official APIs.</div>
+        </div>
+        <div class="faq-item" onclick="landFaq(this)">
+          <div class="faq-header"><span>Can I cancel anytime?</span><span class="land-faq-icon">+</span></div>
+          <div class="land-faq-answer" style="display: none;">Yes, you can easily manage or cancel your subscription at any time directly from your Profile settings.</div>
+        </div>
+        <div class="faq-item" onclick="landFaq(this)">
+          <div class="faq-header"><span>Does the free trial require a credit card?</span><span class="land-faq-icon">+</span></div>
+          <div class="land-faq-answer" style="display: none;">The Free account requires no card. Paid trial plans require a payment method, but you won't be charged until Day 6.</div>
+        </div>
+        <div class="faq-item" onclick="landFaq(this)">
+          <div class="faq-header"><span>How does auto-publishing work?</span><span class="land-faq-icon">+</span></div>
+          <div class="land-faq-answer" style="display: none;">You connect your social accounts via secure OAuth. Once you schedule a post, PostAway automatically publishes it at the exact chosen time.</div>
+        </div>
+        <div class="faq-item" onclick="landFaq(this)">
+          <div class="faq-header"><span>What Instagram account type is required?</span><span class="land-faq-icon">+</span></div>
+          <div class="land-faq-answer" style="display: none;">An Instagram Business or Creator account connected to a Facebook Page is required for direct auto-publishing. Switching your account type is free inside Instagram.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Jennifer -->
+    <section id="land-about" class="land-section">
+      <div class="about-card">
+        <img src="https://jennifercmessina.com/wp-content/uploads/2022/02/IMG_1273-Jennifer-Messina.png" alt="Jennifer C. Messina" class="about-img">
+        <div>
+          <h2 style="font-size: 1.8rem; font-weight: 800;">Jennifer C. Messina</h2>
+          <div style="font-size: 0.85rem; color: var(--accent-light); margin-bottom: 16px; font-weight: 600;">U.S. Army Veteran (Public Affairs) &middot; Recording Artist &middot; Actress &middot; Founder, Messina Enterprises &amp; Messina Glam</div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.92rem; color: var(--text-sec); line-height: 1.6;">
+            <p>"I spent 14 years in the U.S. Army as a Public Affairs Officer. I learned that communication is not just a skill - it is a weapon, a bridge, and a brand."</p>
+            <p>"Toward the end of my Army career, we began using AI to help create products faster. It didn't replace the years of training - it made my productivity sharper. That is the same vision I had for PostAway."</p>
+            <p>"When I launched Messina Enterprises, I worked with clients who had deep expertise in their fields but couldn't crack social media. Wrong hashtags. No conversions. People with 20-year careers getting outposted by accounts with no credentials."</p>
+            <p>"So I built PostAway. Not to replace social media managers - but to make our workload go faster. Your expertise. Your voice. PostAway just gets it out the door quicker."</p>
+          </div>
+          <div class="signature">Jennifer C. Messina</div>
+          <div style="margin-top: 16px; display: flex; gap: 16px; font-size: 0.85rem;">
+            <a href="https://www.messina-enterprises.com" target="_blank" style="color: var(--accent-light);">Messina Enterprises</a>
+            <a href="https://jennifercmessina.com" target="_blank" style="color: var(--accent-light);">jennifercmessina.com</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="land-section" style="text-align: center; padding: 60px 24px;">
+      <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 16px;">Ready to post smarter?</h2>
+      <p style="color: var(--text-sec); margin-bottom: 28px;">Start auto-publishing to Instagram and TikTok today.</p>
+      <button class="btn btn-primary" style="padding: 16px 36px; font-size: 1.05rem;" onclick="showScreen('screen-signup')">Get Started Free</button>
+    </section>
+
+    <!-- Footer -->
+    <footer style="padding: 40px 24px; border-top: 1px solid var(--border-subtle); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+      <p>&copy; 2026 PostAway. All rights reserved.</p>
+      <p style="margin-top: 8px;">
+        <a href="/privacy.html" style="color: var(--text-muted); text-decoration: underline;">Privacy Policy</a> &middot;
+        <a href="/terms.html" style="color: var(--text-muted); text-decoration: underline;">Terms of Service</a>
       </p>
-      <!-- CTAs -->
-      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:300px;margin:0 auto 52px;">
-        <button onclick="showScreen('screen-signup')" style="width:100%;padding:16px 32px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 8px 28px rgba(124,63,204,0.42);letter-spacing:0.01em;">
-          Get Started Free &#8594;
-        </button>
-        <button onclick="showScreen('screen-login')" style="width:100%;padding:14px 24px;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.13);border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
-          Already have an account? Sign in
-        </button>
-      </div>
-    </div>
-  </section>
+      <p style="margin-top: 12px; color: var(--accent-light); font-weight: 500;">Created by Messina Glam LLC</p>
+    </footer>
+  </div>
 
-  <!-- APP PREVIEW MOCKUP -->
-  <section id="land-preview" style="padding:0 16px 72px;">
-    <div style="max-width:680px;margin:0 auto;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;box-shadow:0 24px 64px rgba(0,0,0,0.5);">
-      <!-- Window chrome -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:7px;">
-          <div style="width:11px;height:11px;border-radius:50%;background:#FF5F57;"></div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#FEBC2E;"></div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#28C840;"></div>
-          <span style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:8px;font-family:monospace;">postaway.app</span>
+  <!-- ========================================== -->
+  <!-- SCREEN 2: LOGIN                            -->
+  <!-- ========================================== -->
+  <div id="screen-login" class="screen">
+    <div class="auth-center">
+      <div class="auth-card">
+        <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.85rem; text-decoration: none; display: block; margin-bottom: 20px; text-align: left;">&larr; Back to home</a>
+        <img src="logo.png" width="36" height="36" style="border-radius:9px; box-shadow:0 4px 14px rgba(124,63,204,0.4);" alt="Logo">
+        <div style="font-weight: 800; font-size: 1.2rem; margin-top: 8px;">PostAway</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;">AI Social Media Scheduler</div>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">Welcome back</h2>
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="name@example.com">
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="land-tab-btn active" id="ltab-queue" onclick="landTab('queue')">Queue</button>
-          <button class="land-tab-btn" id="ltab-analytics" onclick="landTab('analytics')">Analytics</button>
-          <button class="land-tab-btn" id="ltab-ai" onclick="landTab('ai')">AI Captions</button>
+        <div class="form-group">
+          <label class="form-label" for="login-pass">Password</label>
+          <input type="password" id="login-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
         </div>
-      </div>
-      <!-- Queue Tab -->
-      <div id="land-tab-queue" style="display:flex;flex-direction:column;gap:12px;">
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="width:42px;height:42px;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-radius:10px;flex-shrink:0;"></div>
-          <div style="flex:1;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-              <span style="font-size:13px;font-weight:600;color:#fff;">Summer Collection Reel</span>
-              <span style="font-size:10px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:4px;padding:2px 7px;">Scheduled</span>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Today, 2:00 PM - Instagram</span>
-          </div>
-          <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="width:42px;height:42px;background:linear-gradient(135deg,#010101,#69C9D0);border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-            <span style="color:#fff;font-size:11px;font-weight:800;font-family:monospace;">TT</span>
-          </div>
-          <div style="flex:1;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-              <span style="font-size:13px;font-weight:600;color:#fff;">Behind the Scenes</span>
-              <span style="font-size:10px;font-weight:700;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);border-radius:4px;padding:2px 7px;">Queued</span>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Tomorrow, 9:00 AM - TikTok</span>
-          </div>
-          <div style="width:8px;height:8px;background:#4ade80;border-radius:50%;flex-shrink:0;"></div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-          <div style="width:42px;height:42px;background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);border-radius:10px;flex-shrink:0;"></div>
-          <div style="flex:1;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-              <span style="font-size:13px;font-weight:600;color:#fff;">Morning Routine Carousel</span>
-              <span style="font-size:10px;font-weight:700;background:rgba(167,139,250,0.15);color:#A78BFA;border:1px solid rgba(167,139,250,0.3);border-radius:4px;padding:2px 7px;">Draft</span>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.4);">Thursday, 7:00 AM - Instagram</span>
-          </div>
-          <div style="width:8px;height:8px;background:rgba(255,255,255,0.2);border-radius:50%;flex-shrink:0;"></div>
-        </div>
-      </div>
-      <!-- Analytics Tab -->
-      <div id="land-tab-analytics" style="display:none;gap:12px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Posts Published</div>
-            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">28</div>
-            <div style="font-size:12px;color:#4ade80;font-weight:600;">This month</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Reach</div>
-            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">14.8K</div>
-            <div style="font-size:12px;color:#4ade80;font-weight:600;">+34% vs last mo</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;">
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Engagement</div>
-            <div style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;">6.4%</div>
-            <div style="font-size:12px;color:#4ade80;font-weight:600;">Above avg</div>
-          </div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;font-size:13px;color:rgba(255,255,255,0.5);text-align:center;">
-          Platform breakdown: Instagram 62% &nbsp;|&nbsp; TikTok 38%
-        </div>
-      </div>
-      <!-- AI Captions Tab -->
-      <div id="land-tab-ai" style="display:none;">
-        <div style="background:rgba(124,63,204,0.08);border:1px solid rgba(124,63,204,0.2);border-radius:14px;padding:16px;margin-bottom:12px;">
-          <div style="font-size:11px;color:#A78BFA;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">AI Caption Generator</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.6);font-family:monospace;margin-bottom:10px;">"Generate a caption for my summer collection reel with relevant hashtags..."</div>
-          <div style="font-size:13px;color:#C4B5FD;line-height:1.6;">
-            Summer is the season for bold moves. Shop our new collection link in bio and step into your era. &#9728;&#65039;<br>
-            <span style="color:rgba(255,255,255,0.35);">#summer #fashion #style #ootd #newcollection #aesthetic</span>
-          </div>
-        </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.3);text-align:center;">AI captions available on Starter and Pro plans</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section id="land-features" style="padding:0 20px 72px;background:rgba(0,0,0,0.25);">
-    <div style="max-width:680px;margin:0 auto;">
-      <div style="text-align:center;margin-bottom:48px;">
-        <h2 style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Built for creators who value their time</h2>
-        <p style="font-size:16px;color:rgba(255,255,255,0.5);line-height:1.6;">Stop logging into two apps every day. Manage Instagram and TikTok from one clean dashboard.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">📅</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Visual Scheduler</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Pick a date and time, write your caption, and PostAway auto-publishes to Instagram and TikTok.</div>
-        </div>
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">✨</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">AI Captions</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Generate on-brand captions and hashtags instantly. Paste your key topics and let AI do the rest.</div>
-        </div>
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🖼️</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Media Library</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Upload once, reuse forever. Your content vault is always ready when inspiration strikes.</div>
-        </div>
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">📊</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Analytics</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Track reach, engagement, and post performance across both platforms in one view.</div>
-        </div>
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🎲</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Content Randomizer</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Stuck on what to post? Randomizer pulls from your library and schedules content automatically.</div>
-        </div>
-        <div class="land-feat-card">
-          <div style="width:44px;height:44px;background:rgba(124,63,204,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;">🔔</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;">Email Alerts</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">Get notified when posts publish or if anything needs attention - no manual checking required.</div>
+        <button id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="doLogin()">Sign In</button>
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+          <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-forgot'); return false;">Forgot password?</a>
+          <a href="#" style="color: var(--text-sec); text-decoration: none;" onclick="showScreen('screen-signup'); return false;">No account? Sign up</a>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ROI CALCULATOR -->
-  <section style="padding:64px 20px;border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);">
-    <div style="max-width:560px;margin:0 auto;text-align:center;background:linear-gradient(160deg,rgba(124,63,204,0.12),rgba(91,43,153,0.08));border:1px solid rgba(124,63,204,0.2);border-radius:24px;padding:48px 32px;">
-      <h2 style="font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;">How much time will you save?</h2>
-      <p style="font-size:14px;color:rgba(255,255,255,0.45);margin-bottom:32px;">Adjust based on your weekly posts:</p>
-      <div style="max-width:360px;margin:0 auto 28px;">
-        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:10px;">
-          <span>Posts per week:</span>
-          <span id="land-slider-val" style="color:#A78BFA;font-weight:800;font-size:18px;">15</span>
+  <!-- ========================================== -->
+  <!-- SCREEN 3: SIGNUP                           -->
+  <!-- ========================================== -->
+  <div id="screen-signup" class="screen">
+    <div class="auth-center">
+      <div class="auth-card">
+        <a href="#" onclick="showScreen('screen-landing'); return false;" style="color: var(--text-sec); font-size: 0.85rem; text-decoration: none; display: block; margin-bottom: 20px; text-align: left;">&larr; Back to home</a>
+        <img src="logo.png" width="36" height="36" style="border-radius:9px; box-shadow:0 4px 14px rgba(124,63,204,0.4);" alt="Logo">
+        <div style="font-weight: 800; font-size: 1.2rem; margin-top: 8px;">PostAway</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;">AI Social Media Scheduler</div>
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">Create your account</h2>
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="name@example.com">
         </div>
-        <input type="range" id="land-post-slider" min="5" max="50" value="15" step="5" style="width:100%;accent-color:#7C3FCC;cursor:pointer;" oninput="landCalc()">
+        <div class="form-group">
+          <label class="form-label" for="signup-pass">Password</label>
+          <input type="password" id="signup-pass" class="form-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        </div>
+        <button id="signup-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="doSignup()">Create Account</button>
+        <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-sec);">
+          Already have an account? <a href="#" style="color: var(--accent-light); text-decoration: none;" onclick="showScreen('screen-login'); return false;">Sign in</a>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 20px; line-height: 1.4;">By signing up you agree to our Terms of Service and Privacy Policy.</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;background:rgba(0,0,0,0.3);border-radius:16px;padding:20px;">
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 4: FORGOT PASSWORD                  -->
+  <!-- ========================================== -->
+  <div id="screen-forgot" class="screen">
+    <div class="auth-center">
+      <div class="auth-card">
+        <a href="#" onclick="showScreen('screen-login'); return false;" style="color: var(--text-sec); font-size: 0.85rem; text-decoration: none; display: block; margin-bottom: 20px; text-align: left;">&larr; Back to sign in</a>
+        <img src="logo.png" width="36" height="36" style="border-radius:9px; box-shadow:0 4px 14px rgba(124,63,204,0.4);" alt="Logo">
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin: 16px 0 8px 0;">Reset password</h2>
+        <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 24px;">Enter your email and we'll send you a password reset link.</p>
+        <div class="form-group">
+          <label class="form-label" for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" class="form-input" placeholder="name@example.com">
+        </div>
+        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="doForgot()">Send Reset Link</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 5: ONBOARDING                       -->
+  <!-- ========================================== -->
+  <div id="screen-onboarding" class="screen">
+    <div style="padding: 24px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px; font-weight: 800;">
+        <img src="logo.png" width="30" height="30" style="border-radius:8px;" alt="Logo">
+        <span>PostAway</span>
+      </div>
+      <button class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.8rem;" onclick="finishOnboarding()">Skip</button>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; max-width: 480px; margin: 0 auto;">
+      <div id="onboarding-slides" style="width: 100%;">
+        <div class="ob-slide" data-slide="0">
+          <div style="font-size: 4rem; margin-bottom: 20px;">&#128640;</div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">Welcome to PostAway</h2>
+          <p style="color: var(--text-sec); font-size: 1rem; line-height: 1.5;">Your Instagram and TikTok scheduler. Set it up in minutes.</p>
+        </div>
+        <div class="ob-slide" data-slide="1" style="display: none;">
+          <div style="font-size: 4rem; margin-bottom: 20px;">&#128197;</div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">Schedule in seconds</h2>
+          <p style="color: var(--text-sec); font-size: 1rem; line-height: 1.5;">Pick your content, write a caption (or let AI do it), choose your posting days and times.</p>
+        </div>
+        <div class="ob-slide" data-slide="2" style="display: none;">
+          <div style="font-size: 4rem; margin-bottom: 20px;">&#128279;</div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">Connect your accounts</h2>
+          <p style="color: var(--text-sec); font-size: 1rem; line-height: 1.5;">Link Instagram and TikTok via secure OAuth. PostAway posts for you automatically.</p>
+        </div>
+        <div class="ob-slide" data-slide="3" style="display: none;">
+          <div style="font-size: 4rem; margin-bottom: 20px;">&#10024;</div>
+          <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">You're ready!</h2>
+          <p style="color: var(--text-sec); font-size: 1rem; line-height: 1.5;">Head to Profile to connect your accounts, then start scheduling. Your first post is waiting.</p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; margin: 36px 0;">
+        <div id="ob-dot-0" class="dot active"></div>
+        <div id="ob-dot-1" class="dot"></div>
+        <div id="ob-dot-2" class="dot"></div>
+        <div id="ob-dot-3" class="dot"></div>
+      </div>
+      <button id="ob-next-btn" class="btn btn-primary" style="width: 100%; max-width: 280px;" onclick="obNext()">Next</button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 6: MAIN APP                         -->
+  <!-- ========================================== -->
+  <div id="screen-app" class="screen">
+    <div id="app-nav" class="app-nav-header">
+      <div style="display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem;">
+        <img src="logo.png" width="28" height="28" style="border-radius:7px; box-shadow:0 2px 10px rgba(124,63,204,0.4);" alt="Logo">
+        <span>PostAway</span>
+      </div>
+      <div id="nav-avatar" style="width: 34px; height: 34px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; cursor: pointer;" onclick="switchTab('profile')">?</div>
+    </div>
+
+    <div id="app-content" class="app-main-body">
+
+      <!-- TAB: HOME -->
+      <div id="tab-home" class="tab-panel active">
+        <div style="margin-bottom: 24px;">
+          <h2 id="greeting-name" style="font-size: 1.6rem; font-weight: 800;">Good morning</h2>
+          <p style="color: var(--text-sec); font-size: 0.9rem;">Here's your posting overview</p>
+        </div>
+        <div id="ig-banner" class="glass-card" style="display: none; padding: 16px; margin-bottom: 14px; border-color: rgba(236,72,153,0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Connect Instagram</div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Link your account to enable auto-publishing</div>
+            </div>
+            <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="switchTab('profile')">Connect</button>
+          </div>
+        </div>
+        <div id="tt-banner" class="glass-card" style="display: none; padding: 16px; margin-bottom: 14px; border-color: rgba(255,255,255,0.2);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Connect TikTok</div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Publish directly to TikTok from PostAway</div>
+            </div>
+            <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="connectTikTok()">Connect</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
+          <div class="glass-card" style="padding: 20px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Scheduled Posts</div>
+            <div id="stat-scheduled" style="font-size: 2rem; font-weight: 800; margin-top: 4px;">0</div>
+          </div>
+          <div class="glass-card" style="padding: 20px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Published Posts</div>
+            <div id="stat-published" style="font-size: 2rem; font-weight: 800; margin-top: 4px;">0</div>
+          </div>
+        </div>
+        <div id="dashboard-upgrade-bar" style="display: none; background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.2)); border: 1px solid rgba(245,158,11,0.4); padding: 16px; border-radius: 14px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem; color: #FBBF24;">Free Plan Limit Reached</div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Upgrade for unlimited auto-publishing to Instagram &amp; TikTok</div>
+            </div>
+            <button class="btn btn-gold" style="padding: 8px 16px; font-size: 0.8rem;" onclick="showUpgradeModal()">Upgrade</button>
+          </div>
+        </div>
         <div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Hours saved / month</div>
-          <div id="land-hours-saved" style="font-size:28px;font-weight:800;color:#fff;">11.3 hrs</div>
-        </div>
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Value at $50/hr</div>
-          <div id="land-dollars-saved" style="font-size:28px;font-weight:800;color:#4ade80;">$563/mo</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PRICING -->
-  <section id="land-pricing" style="padding:72px 20px;">
-    <div style="max-width:720px;margin:0 auto;">
-      <div style="text-align:center;margin-bottom:48px;">
-        <h2 style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Simple, transparent pricing</h2>
-        <p style="font-size:16px;color:rgba(255,255,255,0.5);">Every paid plan includes a 5-day free trial. No credit card needed to sign up.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start;">
-        <!-- Free -->
-        <div class="land-price-card">
-          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Free</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Get started, no card needed</div>
-          <div style="margin-bottom:24px;">
-            <span style="font-size:36px;font-weight:800;color:#fff;">$0</span>
-          </div>
-          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Up to 10 posts</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Instagram only</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Basic scheduler</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Media library</li>
-          </ul>
-          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">Get Started</button>
-        </div>
-        <!-- Starter - highlighted -->
-        <div class="land-price-card" style="border:2px solid #7C3FCC;background:rgba(124,63,204,0.08);position:relative;">
-          <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#7C3FCC;color:#fff;font-size:11px;font-weight:800;padding:3px 14px;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Most Popular</div>
-          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Starter</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">For serious creators</div>
-          <div style="margin-bottom:24px;">
-            <span style="font-size:36px;font-weight:800;color:#fff;">$12</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
-            <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px;">or $96/yr</div>
-          </div>
-          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
-            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Unlimited posts</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Instagram scheduling</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> AI caption generator</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> Analytics</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;"><span style="color:#A78BFA;font-weight:800;">&#10003;</span> 5-day free trial</li>
-          </ul>
-          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 6px 20px rgba(124,63,204,0.4);">Start Free Trial</button>
-        </div>
-        <!-- Pro -->
-        <div class="land-price-card">
-          <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">Pro</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">Instagram + TikTok</div>
-          <div style="margin-bottom:24px;">
-            <span style="font-size:36px;font-weight:800;color:#fff;">$24</span><span style="font-size:14px;color:rgba(255,255,255,0.4);">/mo</span>
-          </div>
-          <ul style="list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;">
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Everything in Starter</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> TikTok scheduling</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Cross-platform analytics</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> Content randomizer</li>
-            <li style="font-size:13px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:8px;"><span style="color:#7C3FCC;font-weight:800;">&#10003;</span> 5-day free trial</li>
-          </ul>
-          <button onclick="showScreen('screen-signup')" style="margin-top:auto;width:100%;padding:13px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">Start Free Trial</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section id="land-faq" style="padding:0 20px 72px;background:rgba(0,0,0,0.2);">
-    <div style="max-width:600px;margin:0 auto;">
-      <h2 style="font-size:28px;font-weight:800;color:#fff;text-align:center;margin-bottom:36px;letter-spacing:-0.01em;">Frequently asked questions</h2>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="land-faq-item" onclick="landFaq(this)">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
-            <span>Which platforms does PostAway support?</span>
-            <span style="color:rgba(255,255,255,0.4);font-size:18px;transition:transform .2s;" class="land-faq-icon">+</span>
-          </div>
-          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">PostAway currently supports Instagram (Business and Creator accounts) and TikTok. Both platforms support auto-publishing, scheduling, and analytics.</div>
-        </div>
-        <div class="land-faq-item" onclick="landFaq(this)">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
-            <span>Can I cancel my subscription anytime?</span>
-            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
-          </div>
-          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Yes, cancel anytime from your Profile settings. No long-term commitments required.</div>
-        </div>
-        <div class="land-faq-item" onclick="landFaq(this)">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
-            <span>Does the free trial require a credit card?</span>
-            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
-          </div>
-          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Creating a free account requires no credit card. If you upgrade to a paid plan, the 5-day trial is included and you won't be charged until it ends.</div>
-        </div>
-        <div class="land-faq-item" onclick="landFaq(this)">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
-            <span>How does auto-publishing work?</span>
-            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
-          </div>
-          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Connect your Instagram and TikTok accounts via OAuth, schedule your posts with captions and media, and PostAway publishes them at the exact time you set - no manual action needed. You'll get an email confirmation when each post goes live.</div>
-        </div>
-        <div class="land-faq-item" onclick="landFaq(this)">
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;font-size:14px;font-weight:600;color:#fff;">
-            <span>What kind of accounts can connect to Instagram?</span>
-            <span style="color:rgba(255,255,255,0.4);font-size:18px;" class="land-faq-icon">+</span>
-          </div>
-          <div class="land-faq-answer" style="display:none;padding:0 20px 18px;font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;">Instagram requires a Business or Creator account connected to a Facebook Page to use the publishing API. Personal accounts cannot be connected. Switching is free and takes about 2 minutes in the Instagram app.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ABOUT JENNIFER -->
-  <section id="land-about" style="padding:0 20px 72px;">
-    <div style="max-width:600px;margin:0 auto;">
-      <div style="text-align:center;margin-bottom:36px;">
-        <h2 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.01em;margin-bottom:8px;">Why I built this</h2>
-        <p style="font-size:15px;color:rgba(255,255,255,0.45);">A tool born from service, performance, and years in the trenches of social media.</p>
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;">
-        <div style="width:100%;height:280px;overflow:hidden;position:relative;">
-          <img src="https://jennifercmessina.com/wp-content/uploads/2022/02/IMG_1273-Jennifer-Messina.png" alt="Jennifer C. Messina" style="width:100%;height:100%;object-fit:cover;object-position:center 15%;">
-          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(10,6,20,0.98) 100%);"></div>
-        </div>
-        <div style="padding:0 28px 28px;margin-top:-32px;position:relative;">
-          <div style="font-weight:800;font-size:20px;color:#fff;font-family:'Poppins',sans-serif;margin-bottom:6px;">Jennifer C. Messina</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.4);line-height:1.6;margin-bottom:24px;">U.S. Army Veteran (Public Affairs) · Recording Artist · Actress · Founder, Messina Enterprises &amp; Messina Glam</div>
-          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:14px;">I spent 14 years in the U.S. Army as a Public Affairs Officer. I learned that communication is not just a skill - it is a weapon, a bridge, and a brand.</p>
-          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:14px;">When I launched <a href="https://www.messina-enterprises.com" target="_blank" style="color:#A78BFA;text-decoration:none;font-weight:600;">Messina Enterprises</a>, I worked with clients who had deep expertise in their fields but couldn't crack social media. Wrong hashtags. No conversions. People with 20-year careers getting outposted by accounts with no credentials.</p>
-          <p style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:24px;">So I built PostAway. Not to replace social media managers - but to make our workload go faster. Your expertise. Your voice. PostAway just gets it out the door quicker.</p>
-          <div style="font-family:'Dancing Script','Brush Script MT',cursive;font-size:28px;color:#C4B5FD;margin-bottom:20px;">Jennifer C. Messina</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a href="https://www.messina-enterprises.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.3);color:#A78BFA;text-decoration:none;font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;">Messina Enterprises</a>
-            <a href="https://www.jennifercmessina.com" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,63,204,0.15);border:1px solid rgba(124,63,204,0.3);color:#A78BFA;text-decoration:none;font-size:12px;font-weight:600;padding:7px 14px;border-radius:99px;">jennifercmessina.com</a>
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Upcoming posts</h3>
+          <div id="upcoming-list">
+            <div class="glass-card" style="padding: 40px 20px; text-align: center;">
+              <span style="font-size: 2rem; color: var(--accent-light);">&#10022;</span>
+              <p style="color: var(--text-sec); margin: 12px 0 18px 0; font-size: 0.9rem;">No posts scheduled yet. Tap Schedule to get started.</p>
+              <button class="btn btn-primary" style="padding: 8px 20px; font-size: 0.85rem;" onclick="switchTab('schedule')">Schedule Posts</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- BOTTOM CTA -->
-  <section style="padding:0 20px 72px;">
-    <div style="max-width:600px;margin:0 auto;background:linear-gradient(135deg,rgba(124,63,204,0.25),rgba(91,43,153,0.15));border:1px solid rgba(124,63,204,0.3);border-radius:24px;padding:52px 32px;text-align:center;">
-      <h2 style="font-size:30px;font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:-0.01em;">Ready to post smarter?</h2>
-      <p style="font-size:16px;color:rgba(255,255,255,0.5);margin-bottom:32px;line-height:1.6;">Join creators who save hours every week with PostAway.</p>
-      <button onclick="showScreen('screen-signup')" style="padding:16px 48px;background:linear-gradient(135deg,#7C3FCC,#5B2B99);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 8px 28px rgba(124,63,204,0.45);">Get Started Free</button>
-    </div>
-  </section>
+      <!-- TAB: SCHEDULE -->
+      <div id="tab-schedule" class="tab-panel">
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.6rem; font-weight: 800;">Visual Scheduler</h2>
+          <p id="sched-tab-sub" style="color: var(--text-sec); font-size: 0.9rem;">Set up your content pipeline step-by-step</p>
+        </div>
+        <div id="sched-dots" class="step-dots">
+          <div id="dot-0" class="dot active"></div>
+          <div id="dot-1" class="dot"></div>
+          <div id="dot-2" class="dot"></div>
+          <div id="dot-3" class="dot"></div>
+        </div>
+        <div id="sched-step-0" class="step-panel active">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 1: Select Content</h3>
+          <div id="sched-library-empty" class="glass-card" style="padding: 24px; text-align: center; margin-bottom: 16px;">
+            <p style="color: var(--text-sec); font-size: 0.9rem;">No media in library yet.</p>
+          </div>
+          <div id="sched-library-grid" class="media-grid" style="margin-bottom: 16px;"></div>
+          <div id="dropzone" class="glass-card" style="padding: 30px; text-align: center; border-style: dashed; cursor: pointer;" onclick="document.getElementById('file-input').click()">
+            <div style="font-size: 2rem; margin-bottom: 8px;">&#128193;</div>
+            <div style="font-weight: 600; font-size: 0.95rem;">Or upload new files</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Supports PNG, JPG, MP4 videos</div>
+            <input type="file" id="file-input" multiple accept="image/*,video/*" style="display: none;" onchange="addFiles(this.files)">
+          </div>
+          <div id="photo-grid" class="photo-grid" style="display: none;"></div>
+          <button id="step0-next" class="btn btn-primary" style="width: 100%; margin-top: 20px; display: none;" onclick="goStep(1)">Continue to AI Captions &rarr;</button>
+        </div>
+        <div id="sched-step-1" class="step-panel">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 2: AI Captions</h3>
+          <div id="ai-nudge-msg" class="glass-card" style="padding: 16px; margin-bottom: 16px; font-size: 0.85rem; color: var(--text-sec);">
+            &#128161; Add your AI API key in Profile settings for custom AI generation.
+          </div>
+          <button id="ai-gen-btn" class="btn btn-primary" style="width: 100%; margin-bottom: 20px;" onclick="runAI()">&#10024; Generate AI Captions</button>
+          <div id="caption-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+          <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="goStep(2)">Continue to Schedule Config &rarr;</button>
+        </div>
+        <div id="sched-step-2" class="step-panel">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 3: Schedule Settings</h3>
+          <div class="form-group">
+            <label class="form-label">Posting Days</label>
+            <div class="day-chips">
+              <div class="day-chip" data-day="0" onclick="toggleDay(this)">Sun</div>
+              <div class="day-chip" data-day="1" onclick="toggleDay(this)">Mon</div>
+              <div class="day-chip active" data-day="2" onclick="toggleDay(this)">Tue</div>
+              <div class="day-chip" data-day="3" onclick="toggleDay(this)">Wed</div>
+              <div class="day-chip active" data-day="4" onclick="toggleDay(this)">Thu</div>
+              <div class="day-chip" data-day="5" onclick="toggleDay(this)">Fri</div>
+              <div class="day-chip" data-day="6" onclick="toggleDay(this)">Sat</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label class="form-label" for="post-time">Posting Time</label>
+              <input type="time" id="post-time" class="form-input" value="09:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tz-select">Timezone</label>
+              <select id="tz-select" class="form-input">
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">Eastern (EST)</option>
+                <option value="America/Chicago">Central (CST)</option>
+                <option value="America/Denver">Mountain (MST)</option>
+                <option value="America/Los_Angeles" selected>Pacific (PST)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Schedule Duration: <span id="weeks-val" style="color: var(--accent-light);">12 weeks</span></label>
+            <input type="range" id="weeks-slider" class="calc-slider" min="1" max="52" value="12" oninput="updateWeeks(this.value)">
+          </div>
+          <div class="toggle-wrap">
+            <div>
+              <div style="font-weight: 600; font-size: 0.9rem;">Recycle Content</div>
+              <div style="font-size: 0.78rem; color: var(--text-sec);">Repeat media sequence to fill scheduled duration</div>
+            </div>
+            <label id="recycle-toggle" class="toggle">
+              <input type="checkbox" checked>
+              <span class="toggle-knob"></span>
+            </label>
+          </div>
+          <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="buildPreview()">Preview Schedule &rarr;</button>
+        </div>
+        <div id="sched-step-3" class="step-panel">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Step 4: Confirm Queue</h3>
+          <div class="form-group">
+            <label class="form-label">Target Platforms</label>
+            <div class="platform-pills">
+              <div class="platform-pill active" data-platform="instagram" onclick="setPlatform('instagram')">Instagram</div>
+              <div class="platform-pill" data-platform="tiktok" onclick="setPlatform('tiktok')">TikTok</div>
+              <div class="platform-pill" data-platform="both" onclick="setPlatform('both')">Both</div>
+            </div>
+          </div>
+          <div id="queue-notice" class="glass-card" style="display: none; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; color: #FBBF24; border-color: rgba(245,158,11,0.3);">
+            Connect an account in Profile to enable live auto-publishing.
+          </div>
+          <div id="preview-strip" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 16px;"></div>
+          <div id="preview-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 260px; overflow-y: auto; margin-bottom: 20px;"></div>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-ghost" style="flex: 1;" onclick="goStep(2)">Back</button>
+            <button id="confirm-btn" class="btn btn-primary" style="flex: 2;" onclick="scheduleAll()">Queue All Posts</button>
+          </div>
+        </div>
+        <div id="sched-posts-list" style="margin-top: 40px; display: none;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Active Queue</h3>
+          <div id="sched-posts-items" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+      </div>
 
-  <!-- FOOTER -->
-  <footer style="padding:32px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.3);font-size:12px;">
-    <div style="margin-bottom:12px;">
-      <a href="/privacy.html" style="color:rgba(255,255,255,0.3);text-decoration:none;margin:0 12px;">Privacy Policy</a>
-      <a href="/terms.html" style="color:rgba(255,255,255,0.3);text-decoration:none;margin:0 12px;">Terms of Service</a>
-    </div>
-    <div style="margin-bottom:6px;">&copy; 2026 PostAway. All rights reserved.</div>
-    <div>Created by <a href="https://www.messina-enterprises.com" target="_blank" style="color:#A78BFA;text-decoration:none;font-weight:600;">Messina Glam LLC</a></div>
-  </footer>
+      <!-- TAB: MEDIA -->
+      <div id="tab-media" class="tab-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <div>
+            <h2 style="font-size: 1.6rem; font-weight: 800;">Media Library</h2>
+            <p style="color: var(--text-sec); font-size: 0.9rem;">Upload and manage assets</p>
+          </div>
+          <button class="btn btn-primary" style="padding: 8px 18px; font-size: 0.85rem;" onclick="document.getElementById('media-file-input').click()">+ Upload</button>
+          <input type="file" id="media-file-input" multiple style="display: none;" onchange="addToMediaLibrary(this.files)">
+        </div>
+        <div id="media-loading" style="display: none; text-align: center; padding: 20px; color: var(--text-sec);">Loading library...</div>
+        <div id="media-empty" class="glass-card" style="padding: 40px; text-align: center;">
+          <span style="font-size: 2rem;">&#128444;&#65039;</span>
+          <p style="color: var(--text-sec); margin-top: 10px; font-size: 0.9rem;">Your library is empty. Upload images or videos to get started.</p>
+        </div>
+        <div id="media-grid" class="media-grid"></div>
+      </div>
 
+      <!-- TAB: RANDOMIZER -->
+      <div id="tab-randomizer" class="tab-panel">
+        <div style="margin-bottom: 20px;">
+          <h2 style="font-size: 1.6rem; font-weight: 800;">Post Randomizer</h2>
+          <p style="color: var(--text-sec); font-size: 0.9rem;">Pick 9 photos and we'll randomize the order for maximum variety</p>
+        </div>
+        <div class="glass-card" style="padding: 24px;">
+          <div id="spin-empty" style="text-align: center; padding: 20px 0;">
+            <span style="font-size: 2.5rem;">&#128194;</span>
+            <div style="font-weight: 700; font-size: 1.05rem; margin-top: 10px;">Shuffle your feed</div>
+            <p style="color: var(--text-sec); font-size: 0.85rem; margin: 6px 0 16px 0;">Upload or select photos to generate an optimized posting order.</p>
+            <button class="btn btn-ghost" style="font-size: 0.85rem;" onclick="switchTab('media')">Go to Media</button>
+          </div>
+          <div id="spin-grid" class="photo-grid" style="display: none; margin-bottom: 16px;"></div>
+          <input type="file" id="rand-input" multiple style="display: none;" onchange="loadRandomizerPhotos(this.files)">
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button class="btn btn-ghost" style="flex: 1; font-size: 0.85rem;" onclick="loadRandFromLibrary()">Use Library</button>
+            <button class="btn btn-ghost" style="flex: 1; font-size: 0.85rem;" onclick="document.getElementById('rand-input').click()">Upload New</button>
+          </div>
+          <button id="rand-btn" class="btn btn-primary" style="width: 100%; margin-top: 14px;" disabled onclick="runRandomizer()">Randomize Order</button>
+        </div>
+        <div id="rand-result" style="display: none; margin-top: 24px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;">Suggested Order</h3>
+          <div id="rand-result-grid" class="photo-grid"></div>
+          <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="sendRandToScheduler()">Schedule This Order &rarr;</button>
+        </div>
+      </div>
+
+      <!-- TAB: ANALYTICS -->
+      <div id="tab-analytics" class="tab-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <div>
+            <h2 style="font-size: 1.6rem; font-weight: 800;">Analytics</h2>
+            <p id="analytics-period-label" style="color: var(--text-sec); font-size: 0.85rem;">Last 30 days performance</p>
+          </div>
+          <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 99px;">
+            <button class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.75rem;" onclick="setAnalyticsPeriod(7, this)">7d</button>
+            <button class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.75rem; background: var(--primary);" onclick="setAnalyticsPeriod(30, this)">30d</button>
+            <button class="btn btn-ghost" style="padding: 4px 12px; font-size: 0.75rem;" onclick="setAnalyticsPeriod(90, this)">90d</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <div class="glass-card" style="padding: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Posts</div>
+            <div id="ac-posts" style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;">24</div>
+            <div id="ac-posts-d" style="font-size: 0.75rem; color: var(--success); margin-top: 2px;">+12%</div>
+          </div>
+          <div class="glass-card" style="padding: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Likes</div>
+            <div id="ac-likes" style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;">1,420</div>
+            <div id="ac-likes-d" style="font-size: 0.75rem; color: var(--success); margin-top: 2px;">+8%</div>
+          </div>
+          <div class="glass-card" style="padding: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Followers</div>
+            <div id="ac-followers" style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;">8,920</div>
+            <div id="ac-followers-d" style="font-size: 0.75rem; color: var(--success); margin-top: 2px;">+240</div>
+          </div>
+          <div class="glass-card" style="padding: 16px;">
+            <div style="font-size: 0.8rem; color: var(--text-sec);">Reach</div>
+            <div id="ac-reach" style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;">42.5K</div>
+            <div id="ac-reach-d" style="font-size: 0.75rem; color: var(--success); margin-top: 2px;">+18%</div>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 12px;">Follower Growth</div>
+          <div style="height: 200px; position: relative;"><canvas id="chart-followers"></canvas></div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 12px;">Engagement Per Post</div>
+          <div style="height: 200px; position: relative;"><canvas id="chart-engagement"></canvas></div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px;">Platform Breakdown</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="font-weight: 700; color: #E1306C; margin-bottom: 8px; font-size: 0.9rem;">Instagram</div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Likes: <span id="ig-avg-likes" style="color: #fff;">180</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Comments: <span id="ig-avg-comments" style="color: #fff;">14</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Reach: <span id="ig-avg-reach" style="color: #fff;">1.2K</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Best Day: <span id="ig-best-day" style="color: #fff;">Tue</span></div>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: #25F4EE; margin-bottom: 8px; font-size: 0.9rem;">TikTok</div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Likes: <span id="tt-avg-likes" style="color: #fff;">340</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Comments: <span id="tt-avg-comments" style="color: #fff;">28</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Avg Views: <span id="tt-avg-views" style="color: #fff;">3.4K</span></div>
+              <div style="font-size: 0.8rem; color: var(--text-sec);">Best Day: <span id="tt-best-day" style="color: #fff;">Thu</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 20px;">
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 12px;">Best Posting Times Heatmap</div>
+          <div id="heatmap-container"></div>
+        </div>
+      </div>
+
+      <!-- TAB: PROFILE -->
+      <div id="tab-profile" class="tab-panel">
+        <div class="glass-card" style="padding: 24px; text-align: center; margin-bottom: 20px;">
+          <div id="profile-avatar" style="width: 64px; height: 64px; border-radius: 50%; background: var(--primary); margin: 0 auto 12px auto; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800;">?</div>
+          <div id="profile-name" style="font-size: 1.2rem; font-weight: 800;">User Account</div>
+          <div id="profile-email" style="font-size: 0.85rem; color: var(--text-sec); margin-top: 2px;">user@example.com</div>
+          <div style="margin-top: 10px;">
+            <span class="plan-badge" style="background: rgba(124,63,204,0.2); color: var(--accent-light); padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--border-accent);">Free Plan</span>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 14px;">Connected Accounts</div>
+          <div id="ig-connect-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.4rem;">&#128248;</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">Instagram</div>
+                <div id="ig-status-label" style="font-size: 0.78rem; color: var(--text-sec);">Not connected</div>
+              </div>
+            </div>
+            <button id="ig-connect-btn" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="connectInstagram()">Connect</button>
+          </div>
+          <div id="tt-connect-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0 0 0;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.4rem;">&#127925;</span>
+              <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">TikTok</div>
+                <div id="tt-status-label" style="font-size: 0.78rem; color: var(--text-sec);">Not connected</div>
+              </div>
+            </div>
+            <button id="tt-connect-btn" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="connectTikTok()">Connect</button>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px;">Subscription</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 16px;">
+            <span style="color: var(--text-sec);">Current Plan</span>
+            <span id="profile-plan-val" style="font-weight: 700;">Free</span>
+          </div>
+          <div id="upgrade-section" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+            <p style="font-size: 0.85rem; color: var(--text-sec); margin-bottom: 12px;">Upgrade your account for unlimited posts and TikTok support.</p>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-ghost" style="flex: 1; font-size: 0.8rem;" onclick="startCheckout('price_1TxGT0BDiYRcrvlHpnE3PBHF')">Starter ($12/mo)</button>
+              <button class="btn btn-primary" style="flex: 1; font-size: 0.8rem;" onclick="startCheckout('price_1TxGVZBDiYRcrvlHpUEIgEfR')">Pro ($24/mo)</button>
+            </div>
+          </div>
+        </div>
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 12px;">AI Provider Settings</div>
+          <div class="ai-pills">
+            <div class="ai-pill active" data-provider="claude" onclick="setAIProvider('claude')">Claude</div>
+            <div class="ai-pill" data-provider="chatgpt" onclick="setAIProvider('chatgpt')">ChatGPT</div>
+            <div class="ai-pill" data-provider="gemini" onclick="setAIProvider('gemini')">Gemini</div>
+          </div>
+          <div class="form-group" style="margin-top: 14px;">
+            <label class="form-label ai-key-label" for="profile-api-key">Claude API Key</label>
+            <input type="password" id="profile-api-key" class="form-input" placeholder="sk-ant-...">
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Your API key is securely encrypted locally.</div>
+          </div>
+          <button class="btn btn-ghost" style="width: 100%; font-size: 0.85rem;" onclick="saveApiKey()">Save Key</button>
+        </div>
+        <button class="btn btn-danger" style="width: 100%; margin-top: 10px;" onclick="doSignout()">Sign Out</button>
+      </div>
+
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+      <button id="tab-btn-home" class="tab-item active" onclick="switchTab('home')">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </button>
+      <button id="tab-btn-schedule" class="tab-item" onclick="switchTab('schedule')">
+        <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+        <span>Schedule</span>
+      </button>
+      <button id="tab-btn-media" class="tab-item" onclick="switchTab('media')">
+        <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
+        <span>Media</span>
+      </button>
+      <button id="tab-btn-randomizer" class="tab-item" onclick="switchTab('randomizer')">
+        <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.45 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+        <span>Randomizer</span>
+      </button>
+      <button id="tab-btn-analytics" class="tab-item" onclick="switchTab('analytics')">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+        <span>Analytics</span>
+      </button>
+      <button id="tab-btn-profile" class="tab-item" onclick="switchTab('profile')">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Landing Page Inline Scripts -->
   <script>
-    function landScroll(id) {
-      var el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    function landTab(name) {
-      ['queue','analytics','ai'].forEach(function(t) {
-        var el = document.getElementById('land-tab-' + t);
-        var btn = document.getElementById('ltab-' + t);
-        if (el) el.style.display = 'none';
-        if (btn) { btn.classList.remove('active'); }
-      });
-      var show = document.getElementById('land-tab-' + name);
-      var showBtn = document.getElementById('ltab-' + name);
-      if (show) show.style.display = name === 'analytics' ? 'block' : 'flex';
-      if (showBtn) showBtn.classList.add('active');
-    }
     function landCalc() {
-      var val = parseInt(document.getElementById('land-post-slider').value);
-      document.getElementById('land-slider-val').innerText = val;
-      var hrs = (val * 0.75).toFixed(1);
-      var dollars = Math.round(parseFloat(hrs) * 50);
-      document.getElementById('land-hours-saved').innerText = hrs + ' hrs';
-      document.getElementById('land-dollars-saved').innerText = '$' + dollars + '/mo';
+      var slider = document.getElementById('land-post-slider');
+      var hoursEl = document.getElementById('land-hours-saved');
+      var dollarsEl = document.getElementById('land-dollars-saved');
+      var valEl = document.getElementById('land-slider-val');
+      if (!slider) return;
+      var posts = parseInt(slider.value) || 15;
+      if (valEl) valEl.innerText = posts + ' posts/week';
+      var hours = Math.round(posts * 0.75 * 4);
+      var dollars = Math.round(hours * 50);
+      if (hoursEl) hoursEl.innerText = hours + ' hrs';
+      if (dollarsEl) dollarsEl.innerText = '$' + dollars.toLocaleString();
     }
     function landFaq(el) {
       var ans = el.querySelector('.land-faq-answer');
       var icon = el.querySelector('.land-faq-icon');
+      if (!ans) return;
       var open = ans.style.display !== 'none';
       ans.style.display = open ? 'none' : 'block';
       if (icon) icon.innerText = open ? '+' : '-';
     }
+    function landTab(tab, el) {
+      document.querySelectorAll('.land-tab-btn').forEach(function(t) { t.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      document.querySelectorAll('.land-tab-content').forEach(function(c) { c.style.display = 'none'; });
+      var target = document.getElementById('land-mock-' + tab);
+      if (target) target.style.display = 'block';
+    }
+    function landScroll(id) {
+      var target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    }
   </script>
-</div>
 
-<!-- ===== SCREEN: LOGIN ===== -->
-<div class="screen" id="screen-login">
-  <div class="auth-wrap">
-    <div style="width:100%;max-width:400px;margin:0 auto;padding:16px 0 0;">
-      <a href="#" onclick="showScreen('screen-landing')" style="font-size:14px;color:var(--muted);text-decoration:none;">← Back</a>
-    </div>
-    <div class="auth-logo">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" class="logo-mark" alt="PostAway" style="border-radius:14px;">
-      <div class="logo-name">PostAway</div>
-      <div class="logo-tag">AI Social Media Scheduler</div>
-    </div>
-    <div class="auth-card">
-      <h2>Welcome back</h2>
-      <p>Sign in to your PostAway account</p>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="login-pass" placeholder="Your password" autocomplete="current-password">
-      </div>
-      <button class="btn btn-gold" id="login-btn" onclick="doLogin()">Sign In</button>
-      <div class="auth-switch" style="margin-top:16px;">No account? <a href="#" onclick="showScreen('screen-signup')">Sign up free</a></div>
-      <div class="auth-switch" style="margin-top:8px"><a href="#" onclick="showScreen('screen-forgot')" style="font-size:12px;color:var(--gray)">Forgot password?</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== SCREEN: SIGNUP ===== -->
-<div class="screen" id="screen-signup">
-  <div class="auth-wrap">
-    <div style="width:100%;max-width:400px;margin:0 auto;padding:16px 0 0;">
-      <a href="#" onclick="showScreen('screen-landing')" style="font-size:14px;color:var(--muted);text-decoration:none;">← Back</a>
-    </div>
-    <div class="auth-logo">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" class="logo-mark" alt="PostAway" style="border-radius:14px;">
-      <div class="logo-name">PostAway</div>
-      <div class="logo-tag">AI Social Media Scheduler</div>
-    </div>
-    <div class="auth-card">
-      <h2>Create your account</h2>
-      <p>Start scheduling posts in minutes</p>
-      <div class="field">
-        <label>Full Name</label>
-        <input type="text" id="signup-name" placeholder="Your name" autocomplete="name">
-      </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="signup-pass" placeholder="8+ characters" autocomplete="new-password">
-      </div>
-      <button class="btn btn-gold" id="signup-btn" onclick="doSignup()">Create Account</button>
-      <div class="auth-switch" style="margin-top:16px;">Already have an account? <a href="#" onclick="showScreen('screen-login')">Sign in</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== SCREEN: FORGOT PASSWORD ===== -->
-<div class="screen" id="screen-forgot">
-  <div class="auth-wrap">
-    <div class="auth-logo">
-      <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" class="logo-mark" alt="PostAway" style="border-radius:14px;">
-      <div class="logo-name">PostAway</div>
-    </div>
-    <div class="auth-card">
-      <h2>Reset password</h2>
-      <p>Enter your email and we'll send a reset link</p>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="forgot-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <button class="btn btn-gold" onclick="doForgot()">Send Reset Link</button>
-      <div class="auth-switch"><a href="#" onclick="showScreen('screen-login')">Back to sign in</a></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== SCREEN: ONBOARDING ===== -->
-<div class="screen" id="screen-onboarding" style="background:var(--bg);flex-direction:column;">
-  <div style="flex:1;display:flex;flex-direction:column;max-width:480px;margin:0 auto;width:100%;padding:24px 24px 0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" style="width:24px;height:24px;border-radius:6px;" alt="PostAway">
-        <span style="font-size:15px;font-weight:800;color:var(--purple-900);font-family:'Poppins',sans-serif;">PostAway</span>
-      </div>
-      <button onclick="finishOnboarding()" style="background:none;border:none;font-size:13px;color:var(--muted);cursor:pointer;font-family:'Poppins',sans-serif;font-weight:500;">Skip</button>
-    </div>
-
-    <div id="ob-slides" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-
-      <div class="ob-slide" id="ob-0" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:16px;">
-        <div style="font-size:64px;margin-bottom:20px;">✦</div>
-        <h2 style="font-size:24px;font-weight:800;color:var(--ink);font-family:'Poppins',sans-serif;line-height:1.2;margin-bottom:12px;">Write once.<br>Post everywhere.</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:0;">PostAway uses AI to generate captions, hashtags, and schedules - so you can focus on creating, not copying and pasting.</p>
-      </div>
-
-      <div class="ob-slide" id="ob-1" style="display:none;flex-direction:column;padding-top:8px;">
-        <div style="font-size:48px;text-align:center;margin-bottom:16px;">📅</div>
-        <h2 style="font-size:22px;font-weight:800;color:var(--ink);font-family:'Poppins',sans-serif;text-align:center;margin-bottom:20px;">How to schedule a post</h2>
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">1</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Tap Schedule in the bottom nav</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Go to the Schedule tab and tap the + button to start a new post.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">2</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Upload your photos or video</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Select media from your camera roll. You can add multiple images for a carousel.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">3</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Let AI write your caption</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Tap "Generate Caption" and PostAway will write a caption and hashtags based on your content.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">4</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Pick a date and time, then schedule</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Choose when to post and hit Schedule. PostAway handles the rest automatically.</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ob-slide" id="ob-2" style="display:none;flex-direction:column;padding-top:8px;">
-        <div style="font-size:48px;text-align:center;margin-bottom:16px;">🔀</div>
-        <h2 style="font-size:22px;font-weight:800;color:var(--ink);font-family:'Poppins',sans-serif;text-align:center;margin-bottom:20px;">How to use the Randomizer</h2>
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">1</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Go to the Randomizer tab</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Tap the shuffle icon in the bottom nav to open the Randomizer.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">2</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Upload a batch of photos</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Add all the photos you want to post - old content, new content, anything in your library.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">3</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Tap Randomize</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">PostAway shuffles your photos into a fresh posting order so your grid never looks repetitive.</div></div>
-          </div>
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <div style="width:28px;height:28px;min-width:28px;background:var(--purple-500);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">4</div>
-            <div><div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:2px;">Send to Schedule</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Happy with the order? Send the whole batch to Schedule with one tap.</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ob-slide" id="ob-3" style="display:none;flex-direction:column;align-items:center;text-align:center;padding-top:16px;">
-        <div style="width:80px;height:80px;margin:0 auto 20px;"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ig-ob-g" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="12" fill="url(#ig-ob-g)"/><circle cx="24" cy="24" r="9" stroke="white" stroke-width="2.5" fill="none"/><circle cx="35" cy="13" r="2.5" fill="white"/></svg></div>
-        <h2 style="font-size:24px;font-weight:800;color:var(--ink);font-family:'Poppins',sans-serif;line-height:1.2;margin-bottom:12px;">Connect Instagram<br>to go live.</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">Link your Instagram account and PostAway posts directly to your feed - no copy-pasting, no manual uploads. Just tap Connect on your dashboard.</p>
-        <div style="background:var(--gold-glow);border:1px solid var(--gold-border);border-radius:14px;padding:16px 20px;width:100%;text-align:left;">
-          <div style="font-size:12px;font-weight:700;color:var(--purple-700);margin-bottom:4px;">Pro tip</div>
-          <div style="font-size:13px;color:var(--body-text);line-height:1.6;">You need an Instagram Business or Creator account to enable direct posting. Personal accounts are not supported by Instagram's API.</div>
-        </div>
-      </div>
-
-      <div class="ob-slide" id="ob-4" style="display:none;flex-direction:column;align-items:center;text-align:center;padding-top:16px;">
-        <div style="width:80px;height:80px;margin:0 auto 20px;"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="44" height="44" rx="12" fill="#010101"/><path d="M30.5 10v17.7a6.5 6.5 0 11-4.5-6.2V15.8a10.5 10.5 0 104.5 8.9V10z" fill="white"/><path d="M30.5 16.2c2 .7 3.8.6 5.5-.2v-4c-1.6.7-3.5.9-5.5.2z" fill="#69C9D0"/></svg></div>
-        <h2 style="font-size:24px;font-weight:800;color:var(--ink);font-family:'Poppins',sans-serif;line-height:1.2;margin-bottom:12px;">Connect TikTok<br>to post automatically.</h2>
-        <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">Link your TikTok account so PostAway can publish your videos directly. Head to Profile to connect - it only takes a moment.</p>
-        <button onclick="finishOnboarding(); setTimeout(() => { document.querySelector('[data-tab=profile]')?.click(); }, 300);" style="width:100%;padding:16px;background:var(--purple-500);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:12px;">Connect TikTok Now</button>
-        <button onclick="finishOnboarding()" style="width:100%;padding:14px;background:transparent;color:var(--muted);border:none;border-radius:14px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Poppins',sans-serif;">I'll do this later</button>
-      </div>
-
-    </div>
-  </div>
-
-  <div style="padding:24px;max-width:480px;margin:0 auto;width:100%;">
-    <div id="ob-dots" style="display:flex;justify-content:center;gap:8px;margin-bottom:20px;">
-      <div class="ob-dot active" data-i="0"></div>
-      <div class="ob-dot" data-i="1"></div>
-      <div class="ob-dot" data-i="2"></div>
-      <div class="ob-dot" data-i="3"></div>
-      <div class="ob-dot" data-i="4"></div>
-    </div>
-    <button id="ob-next-btn" class="btn btn-gold" onclick="obNext()">Next</button>
-  </div>
-</div>
-
-<!-- ===== SCREEN: MAIN APP ===== -->
-<div class="screen" id="screen-app">
-
-  <!-- NAV -->
-  <div class="app-nav">
-    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjMyIiB5Mj0iMzIiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjN0MzQUVEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNkIyMUE4Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik04IDE2TDI0IDlMMTcuNSAxNkwyNCAyM0w4IDE2WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMTcuNSAxNkwxMi41IDE4LjVMMTAuNSAyNEwxNy41IDE2WiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjU1KSIvPjwvc3ZnPg==" class="logo-mark-sm" alt="PostAway" style="border-radius:6px;">
-    <div class="nav-logo">PostAway</div>
-    <div class="nav-avatar" id="nav-avatar" onclick="switchTab('profile')">?</div>
-  </div>
-
-  <!-- CONTENT PANELS -->
-  <div class="app-content">
-
-    <!-- HOME TAB -->
-    <div class="tab-panel active" id="tab-home">
-      <div class="greeting" id="greeting-name">Good morning</div>
-      <div class="greeting-sub">Here's your posting overview</div>
-
-      <!-- Instagram connect banner -->
-      <div class="ig-banner" id="ig-banner" style="display:none">
-        <div class="ig-icon" style="width:36px;height:36px;flex-shrink:0"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ig-bn-g" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="12" fill="url(#ig-bn-g)"/><circle cx="24" cy="24" r="9" stroke="white" stroke-width="2.5" fill="none"/><circle cx="35" cy="13" r="2.5" fill="white"/></svg></div>
-        <div class="ig-banner-text">
-          <strong>Connect Instagram</strong>
-          <span>Link your account to start posting</span>
-        </div>
-        <button class="btn btn-ghost" onclick="switchTab('profile')">Connect</button>
-      </div>
-
-      <!-- CONNECT TIKTOK BANNER -->
-      <div id="tt-banner" class="tt-banner" style="display:none">
-        <div class="tt-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28">
-            <path fill="#25F4EE" transform="translate(-0.8,0.8)" d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z"/>
-            <path fill="#FE2C55" transform="translate(0.8,-0.8)" d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z"/>
-            <path fill="#010101" d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z"/>
-          </svg>
-        </div>
-        <div class="ig-banner-text">
-          <strong>Connect TikTok</strong>
-          <span>Link your account to start posting</span>
-        </div>
-        <button class="btn btn-gold" onclick="connectTikTok()">Connect</button>
-      </div>
-
-            <div class="stat-row">
-        <div class="stat-card">
-          <div class="stat-val" id="stat-scheduled">0</div>
-          <div class="stat-label">Scheduled</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" id="stat-published">0</div>
-          <div class="stat-label">Published</div>
-        </div>
-      </div>
-
-      <!-- Upgrade CTA for free users -->
-      <div id="dashboard-upgrade-bar" style="display:none;background:linear-gradient(135deg,#c9a84c,#f0d080);border-radius:12px;padding:14px 18px;margin-bottom:18px;text-align:center;">
-        <div style="font-weight:700;color:#1a1a1a;margin-bottom:4px;">Ready for more?</div>
-        <div style="font-size:13px;color:#333;margin-bottom:10px;">Try Starter free for 5 days - unlimited posts, more platforms. Cancel before day 5 and you will not be charged.</div>
-        <button class="btn btn-dark" style="width:auto;padding:10px 22px;font-size:13px;" onclick="showUpgradePrompt('trial')">See Upgrade Options</button>
-      </div>
-
-      <div class="section-title">Upcoming posts</div>
-      <div id="upcoming-list">
-        <div class="empty-state">
-          <div class="big">✦</div>
-          <p>No posts scheduled yet.<br>Tap Schedule to get started.</p>
-          <button class="btn btn-gold" style="width:auto;padding:12px 24px" onclick="switchTab('schedule')">Schedule Posts</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SCHEDULE TAB -->
-    <div class="tab-panel" id="tab-schedule" style="display:none">
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div>
-          <div class="step-title" style="margin-bottom:0">Schedule</div>
-          <div class="step-sub" style="margin-top:2px" id="sched-tab-sub">Create a new scheduled post batch</div>
-        </div>
-      </div>
-
-      <!-- SCHEDULED POSTS LIST (shown when on step 0 with no files selected) -->
-      <div id="sched-posts-list" style="margin-bottom:20px;display:none">
-        <div style="font-size:12px;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Your upcoming posts</div>
-        <div id="sched-posts-items"></div>
-      </div>
-
-      <div class="step-dots" id="sched-dots">
-        <div class="dot active" id="dot-0"></div>
-        <div class="dot" id="dot-1"></div>
-        <div class="dot" id="dot-2"></div>
-        <div class="dot" id="dot-3"></div>
-      </div>
-
-      <!-- STEP 1: Upload / Library -->
-      <div class="step-panel active" id="sched-step-0">
-        <div class="step-title">Select content</div>
-        <div class="step-sub">Pick from your library or upload new files</div>
-
-        <div id="sched-library-section" style="margin-bottom:14px">
-          <div style="font-size:12px;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">From your library</div>
-          <div id="sched-library-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px"></div>
-          <div id="sched-library-empty" style="display:none;font-size:12px;color:var(--gray);margin-bottom:10px">No library items yet - upload below or go to the Media tab.</div>
-        </div>
-
-        <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
-          <div class="dz-icon" style="color:var(--gold)"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-          <h3>Or upload new files</h3>
-          <p>JPG, PNG, MP4, MOV - added to your library too</p>
-        </div>
-        <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="addFiles(this.files)">
-
-        <div class="photo-grid" id="photo-grid" style="display:none"></div>
-
-        <button class="btn btn-gold" id="step0-next" onclick="goStep(1)" style="display:none">
-          Continue to Captions
-        </button>
-      </div>
-
-      <!-- STEP 2: Captions -->
-      <div class="step-panel" id="sched-step-1" style="display:none">
-        <div class="step-title">AI Captions</div>
-        <div class="step-sub">Review and edit your captions</div>
-
-        <div class="ai-nudge" id="ai-nudge-msg">
-          ✦ <strong style="color:var(--gold-light)">AI caption generation</strong> - add your API key in <a href="#" onclick="switchTab('profile');return false">Profile &gt; AI Settings</a> to auto-generate captions and hashtags for your posts.
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-          <button class="btn btn-ghost" onclick="runAI()" id="ai-gen-btn" style="flex:1">Generate AI Captions</button>
-        </div>
-        <input type="hidden" id="api-key-input">
-
-        <div id="caption-list"></div>
-
-        <button class="btn btn-gold" onclick="goStep(2)">Continue to Schedule</button>
-      </div>
-
-      <!-- STEP 3: Configure -->
-      <div class="step-panel" id="sched-step-2" style="display:none">
-        <div class="step-title">Schedule</div>
-        <div class="step-sub">When should these posts go out?</div>
-
-        <div class="cfg-card" style="margin-bottom:10px">
-          <div class="cfg-label">Post on these days</div>
-          <div class="day-chips" id="day-chips">
-            <div class="day-chip" data-day="0" onclick="toggleDay(this)">Sun</div>
-            <div class="day-chip" data-day="1" onclick="toggleDay(this)">Mon</div>
-            <div class="day-chip active" data-day="2" onclick="toggleDay(this)">Tue</div>
-            <div class="day-chip" data-day="3" onclick="toggleDay(this)">Wed</div>
-            <div class="day-chip active" data-day="4" onclick="toggleDay(this)">Thu</div>
-            <div class="day-chip" data-day="5" onclick="toggleDay(this)">Fri</div>
-            <div class="day-chip" data-day="6" onclick="toggleDay(this)">Sat</div>
-          </div>
-        </div>
-
-        <div class="cfg-row">
-          <div class="cfg-card">
-            <div class="cfg-label">Time</div>
-            <input type="time" id="post-time" value="09:00">
-          </div>
-          <div class="cfg-card">
-            <div class="cfg-label">Timezone</div>
-            <select class="cfg-select" id="tz-select"></select>
-          </div>
-        </div>
-
-        <div class="cfg-card" style="margin-bottom:10px">
-          <div class="cfg-label">Schedule length</div>
-          <div class="cfg-val" id="weeks-val">12 weeks</div>
-          <input type="range" id="weeks-slider" min="1" max="52" value="12" oninput="updateWeeks(this.value)">
-        </div>
-
-        <div class="cfg-card" style="margin-bottom:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:14px;font-weight:600">Recycle content</div>
-              <div style="font-size:12px;color:var(--gray);margin-top:2px">Repeat posts after all photos are used</div>
-            </div>
-            <label class="toggle" style="flex-shrink:0">
-              <input type="checkbox" id="recycle-toggle">
-              <span class="toggle-knob"></span>
-            </label>
-          </div>
-        </div>
-
-
-
-        <button class="btn btn-gold" onclick="buildPreview()">Preview Schedule</button>
-      </div>
-
-      <!-- STEP 4: Preview & Confirm -->
-      <div class="step-panel" id="sched-step-3" style="display:none">
-        <div class="step-title">Preview</div>
-        <div class="step-sub">Confirm your schedule</div>
-
-        <div style="margin-bottom:14px">
-          <div style="font-size:12px;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Post to</div>
-          <div class="platform-pills">
-            <button class="platform-pill active" data-platform="instagram" onclick="setPlatform('instagram')">📸 Instagram</button>
-            <button class="platform-pill" data-platform="tiktok" onclick="setPlatform('tiktok')">🎵 TikTok</button>
-            <button class="platform-pill" data-platform="both" onclick="setPlatform('both')">Both</button>
-          </div>
-        </div>
-
-        <div class="queue-notice" id="queue-notice">
-          <strong>Your posts will be queued.</strong> Connect your Instagram or TikTok account in Profile to enable auto-posting.
-        </div>
-
-        <div class="preview-strip" id="preview-strip"></div>
-        <div class="preview-list" id="preview-list"></div>
-
-        <button class="btn btn-gold" id="confirm-btn" onclick="scheduleAll()">Queue All Posts</button>
-        <div style="height:10px"></div>
-        <button class="btn btn-ghost" onclick="goStep(2)">Back</button>
-      </div>
-
-    </div>
-
-    <!-- RANDOMIZER TAB -->
-    <div class="tab-panel" id="tab-randomizer" style="display:none">
-      <div class="step-title">Post Randomizer</div>
-      <div class="step-sub" style="margin-bottom:20px">Pick 9 photos and we'll randomize the order for maximum variety</div>
-
-      <div class="randomizer-card">
-        <h3>Shuffle your feed</h3>
-        <p>Upload photos below, hit Randomize, and we'll suggest an optimized posting order so your grid looks great.</p>
-
-        <div id="spin-empty" style="text-align:center;padding:32px 16px;color:var(--muted);font-size:14px;line-height:1.6">
-          <div style="font-size:40px;margin-bottom:12px">📂</div>
-          <div style="font-weight:600;color:var(--ink);margin-bottom:6px">No media yet</div>
-          <div>Upload photos first, then come back to randomize your posting order.</div>
-          <button class="btn btn-gold" style="margin-top:16px;width:auto;padding:10px 24px" onclick="switchTab('media')">Go to Media</button>
-        </div>
-        <div class="spin-grid" id="spin-grid" style="display:none"></div>
-
-        <div style="margin-bottom:14px;display:flex;gap:8px">
-          <button class="btn btn-ghost" style="flex:1" onclick="loadRandFromLibrary()">Use Library</button>
-          <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('rand-input').click()">Upload New</button>
-          <input type="file" id="rand-input" multiple accept="image/*,video/*" style="display:none" onchange="loadRandomizerPhotos(this.files)">
-        </div>
-
-        <button class="btn btn-gold" id="rand-btn" onclick="runRandomizer()" disabled>Randomize Order</button>
-      </div>
-
-      <div id="rand-result" style="display:none;margin-top:20px">
-        <div class="section-title" style="margin-bottom:12px">Suggested order</div>
-        <div class="photo-grid" id="rand-result-grid"></div>
-        <button class="btn btn-gold" style="margin-top:4px" onclick="sendRandToScheduler()">Schedule This Order</button>
-      </div>
-    </div>
-
-    <!-- MEDIA TAB -->
-    <div class="tab-panel" id="tab-media" style="display:none">
-      <div class="step-title">Media Library</div>
-      <div class="step-sub" style="margin-bottom:16px">Your photos and videos - upload once, use everywhere</div>
-
-      <div class="media-upload-zone" onclick="document.getElementById('media-file-input').click()">
-        <div style="color:var(--gold)"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-        <h3>Tap to upload</h3>
-        <p>Photos and videos - JPG, PNG, MP4, MOV</p>
-      </div>
-      <input type="file" id="media-file-input" multiple accept="image/*,video/*" style="display:none" onchange="addToMediaLibrary(this.files)">
-
-      <div id="media-loading" style="display:none;text-align:center;padding:20px;color:var(--gray);font-size:13px">
-        <span class="spinner" style="margin-right:8px"></span> Uploading...
-      </div>
-
-      <div id="media-empty" style="text-align:center;padding:30px 0;color:var(--gray);font-size:13px;display:none">
-        No media yet. Upload your first photo or video above.
-      </div>
-
-      <div class="media-grid" id="media-grid"></div>
-    </div>
-
-    <!-- PROFILE TAB -->
-    <div class="tab-panel" id="tab-profile" style="display:none">
-
-      <div class="profile-header">
-        <div class="profile-avatar" id="profile-avatar">?</div>
-        <div class="profile-name" id="profile-name">Loading...</div>
-        <div class="profile-email" id="profile-email"></div>
-        <div class="plan-badge">✦ Free Plan</div>
-      </div>
-
-      <div class="section-title">Connected Accounts</div>
-
-      <div class="profile-row" id="ig-connect-row">
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-          <span style="width:22px;height:22px;display:inline-flex;flex-shrink:0"><svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ig-pr-g" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="12" fill="url(#ig-pr-g)"/><circle cx="24" cy="24" r="9" stroke="white" stroke-width="2.5" fill="none"/><circle cx="35" cy="13" r="2.5" fill="white"/></svg></span>
-          <div>
-            <div class="profile-row-label">Instagram</div>
-            <div class="profile-row-val" id="ig-status-label" style="color:var(--muted)">Not connected</div>
-          </div>
-        </div>
-        <button class="btn btn-ghost" id="ig-connect-btn" onclick="connectInstagram()" style="padding:6px 14px;font-size:13px;flex-shrink:0">Connect</button>
-      </div>
-
-      <div class="profile-row" id="tt-connect-row">
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-          <span style="width:22px;height:22px;display:inline-flex;flex-shrink:0"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#010101"/><path d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z" fill="#25F4EE" transform="translate(-0.8,0.8)"/><path d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z" fill="#FE2C55" transform="translate(0.8,-0.8)"/><path d="M21 7.5a4.8 4.8 0 01-4.8-4.5H13v14.8a2.3 2.3 0 11-2.3-2.2v-3.2a5.5 5.5 0 105.5 5.5V9a8 8 0 004.8 1.6V7.3A4.8 4.8 0 0121 7.5z" fill="white"/><path d="M22.5 11.5c1.5.4 2.8.3 4-.2v-2.9c-1.2.5-2.6.5-4-.1z" fill="#69C9D0"/></svg></span>
-          <div>
-            <div class="profile-row-label">TikTok</div>
-            <div class="profile-row-val" id="tt-status-label" style="color:var(--muted)">Not connected</div>
-          </div>
-        </div>
-        <button class="btn btn-ghost" id="tt-connect-btn" onclick="connectTikTok()" style="padding:6px 14px;font-size:13px;flex-shrink:0">Connect</button>
-      </div>
-
-      <div class="profile-section-title">Subscription</div>
-      <div class="profile-row" style="align-items:center">
-        <span class="profile-row-label">Current Plan</span>
-        <span id="profile-plan-val" class="profile-row-val">Free Plan</span>
-      </div>
-      <div id="upgrade-section" style="padding:0 0 8px">
-        <div style="font-size:12px;color:var(--gray);margin-bottom:10px;padding:0 4px">
-          Free plan: up to 10 posts, Instagram only.
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn btn-gold" data-price="price_1TxGT0BDiYRcrvlHpnE3PBHF" onclick="startCheckout('price_1TxGT0BDiYRcrvlHpnE3PBHF')" style="padding:12px">
-            Upgrade to Starter - $12/mo
-          </button>
-          <button class="btn" data-price="price_1TxGVZBDiYRcrvlHpUEIgEfR" onclick="startCheckout('price_1TxGVZBDiYRcrvlHpUEIgEfR')" style="padding:12px;background:var(--purple);color:#fff">
-            Upgrade to Pro - $24/mo
-          </button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <div class="section-title">AI Settings</div>
-
-      <div class="cfg-card" style="margin-bottom:10px">
-        <div class="cfg-label">AI Provider</div>
-        <div style="display:flex;gap:8px;margin:10px 0 12px">
-          <button class="ai-pill active" data-provider="claude" onclick="setAIProvider('claude')">Claude</button>
-          <button class="ai-pill" data-provider="chatgpt" onclick="setAIProvider('chatgpt')">ChatGPT</button>
-          <button class="ai-pill" data-provider="gemini" onclick="setAIProvider('gemini')">Gemini</button>
-        </div>
-        <div class="ai-key-label" style="font-size:12px;color:var(--gray);margin-bottom:8px">Claude API Key (optional)</div>
-        <div style="margin-top:6px">
-          <input type="password" id="profile-api-key" placeholder="sk-ant-... (optional)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--ink);font-size:13px;font-family:inherit;outline:none;" autocomplete="off">
-          <div style="font-size:11px;color:var(--gray);margin-top:6px">Used for AI caption generation. <a class="ai-key-link" href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--gold-light);text-decoration:underline">Instructions on how to find that</a></div>
-          <button class="btn btn-ghost" style="width:auto;padding:8px 16px;font-size:12px;margin-top:10px" onclick="saveApiKey()">Save Key</button>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <button class="btn btn-danger" onclick="doSignout()" style="margin-top:4px">Sign Out</button>
-
-    </div>
-
-    <!-- ===== TAB: ANALYTICS ===== -->
-
-    <div class="tab-panel" id="tab-analytics" style="display:none">
-      <div class="analytics-header">
-        <div>
-          <h2 class="analytics-title">Analytics</h2>
-          <p class="analytics-subtitle" id="analytics-period-label">Last 30 days</p>
-        </div>
-        <div class="period-pills">
-          <button class="pill active" onclick="setAnalyticsPeriod(7,this)">7d</button>
-          <button class="pill" onclick="setAnalyticsPeriod(30,this)">30d</button>
-          <button class="pill" onclick="setAnalyticsPeriod(90,this)">90d</button>
-        </div>
-      </div>
-
-      <!-- Scorecards -->
-      <div class="analytics-grid">
-        <div class="analytics-card">
-          <div class="ac-label">Posts</div>
-          <div class="ac-value" id="ac-posts">--</div>
-          <div class="ac-delta" id="ac-posts-d"></div>
-        </div>
-        <div class="analytics-card">
-          <div class="ac-label">Likes</div>
-          <div class="ac-value" id="ac-likes">--</div>
-          <div class="ac-delta" id="ac-likes-d"></div>
-        </div>
-        <div class="analytics-card">
-          <div class="ac-label">Followers</div>
-          <div class="ac-value" id="ac-followers">--</div>
-          <div class="ac-delta" id="ac-followers-d"></div>
-        </div>
-        <div class="analytics-card">
-          <div class="ac-label">Reach</div>
-          <div class="ac-value" id="ac-reach">--</div>
-          <div class="ac-delta" id="ac-reach-d"></div>
-        </div>
-      </div>
-
-      <!-- Follower Growth -->
-      <div class="analytics-section">
-        <div class="analytics-section-title">
-          <span>Follower Growth</span>
-          <div class="chart-legend">
-            <span class="legend-ig">● Instagram</span>
-            <span class="legend-tt">● TikTok</span>
-          </div>
-        </div>
-        <div class="chart-wrap"><canvas id="chart-followers"></canvas></div>
-      </div>
-
-      <!-- Engagement per post -->
-      <div class="analytics-section">
-        <div class="analytics-section-title"><span>Engagement Per Post</span></div>
-        <div class="chart-wrap"><canvas id="chart-engagement"></canvas></div>
-      </div>
-
-      <!-- Platform comparison -->
-      <div class="analytics-section">
-        <div class="analytics-section-title"><span>Platform Comparison</span></div>
-        <div class="platform-compare">
-          <div class="platform-col">
-            <div class="platform-col-head" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
-              Instagram
-            </div>
-            <div class="platform-stat"><span>Avg Likes</span><strong id="ig-avg-likes">--</strong></div>
-            <div class="platform-stat"><span>Avg Comments</span><strong id="ig-avg-comments">--</strong></div>
-            <div class="platform-stat"><span>Avg Reach</span><strong id="ig-avg-reach">--</strong></div>
-            <div class="platform-stat"><span>Best Day</span><strong id="ig-best-day">--</strong></div>
-          </div>
-          <div class="platform-col">
-            <div class="platform-col-head" style="background:#010101;color:#fff;">
-              TikTok
-            </div>
-            <div class="platform-stat"><span>Avg Likes</span><strong id="tt-avg-likes">--</strong></div>
-            <div class="platform-stat"><span>Avg Comments</span><strong id="tt-avg-comments">--</strong></div>
-            <div class="platform-stat"><span>Avg Views</span><strong id="tt-avg-views">--</strong></div>
-            <div class="platform-stat"><span>Best Day</span><strong id="tt-best-day">--</strong></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Best Times Heatmap -->
-      <div class="analytics-section" style="margin-bottom:100px;">
-        <div class="analytics-section-title"><span>Best Times to Post</span></div>
-        <div id="heatmap-container"></div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- TAB BAR -->
-  <div class="tab-bar">
-    <div class="tab-item active" id="tab-btn-home" onclick="switchTab('home')">
-      <div class="tab-icon">🏠</div>
-      <div class="tab-label">Home</div>
-    </div>
-    <div class="tab-item" id="tab-btn-schedule" onclick="switchTab('schedule')">
-      <div class="tab-icon">📅</div>
-      <div class="tab-label">Schedule</div>
-    </div>
-    <div class="tab-item" id="tab-btn-media" onclick="switchTab('media')">
-      <div class="tab-icon">🎞️</div>
-      <div class="tab-label">Media</div>
-    </div>
-    <div class="tab-item" id="tab-btn-randomizer" onclick="switchTab('randomizer')">
-      <div class="tab-icon">🔀</div>
-      <div class="tab-label">Randomizer</div>
-    </div>
-    
-    <div class="tab-item" id="tab-btn-analytics" onclick="switchTab('analytics')">
-      <div class="tab-icon">📊</div>
-      <div class="tab-label">Analytics</div>
-    </div>
-    <div class="tab-item" id="tab-btn-profile" onclick="switchTab('profile')">
-      <div class="tab-icon">👤</div>
-      <div class="tab-label">Profile</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ===================== SCRIPTS ===================== -->
-
-<!-- ===================== SCRIPTS ===================== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="app.js"></script>
-
-<!-- UPGRADE MODAL -->
-<div id="upgrade-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:999;align-items:flex-end;justify-content:center;padding:0">
-  <div style="background:var(--card);border-radius:20px 20px 0 0;padding:32px 24px 48px;width:100%;max-width:480px;text-align:center">
-    <div style="font-size:36px;margin-bottom:12px">&#10022;</div>
-    <h3 style="font-size:20px;font-weight:700;margin:0 0 8px;color:var(--text)">Unlock More</h3>
-    <p id="upgrade-modal-msg" style="color:var(--gray);margin:0 0 24px;font-size:14px;line-height:1.5"></p>
-    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
-      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left">
-        <div style="font-weight:700;margin-bottom:2px">Starter <span style="font-size:13px;color:var(--gray);font-weight:400">$12/mo or $96/yr</span></div>
-        <div style="font-size:12px;color:var(--gray);margin-bottom:10px">Unlimited posts, 1 platform, 5-day free trial</div>
-        <button class="btn btn-gold" data-price="price_1TxGT0BDiYRcrvlHpnE3PBHF" onclick="startCheckout('price_1TxGT0BDiYRcrvlHpnE3PBHF')" style="width:100%;padding:11px">Start Free Trial</button>
-      </div>
-      <div style="border:1px solid var(--purple);border-radius:12px;padding:16px;text-align:left;background:rgba(124,63,204,0.04)">
-        <div style="font-weight:700;margin-bottom:2px">Pro <span style="font-size:13px;color:var(--gray);font-weight:400">$24/mo</span></div>
-        <div style="font-size:12px;color:var(--gray);margin-bottom:10px">Unlimited posts, Instagram + TikTok, 5-day free trial</div>
-        <button class="btn" data-price="price_1TxGVZBDiYRcrvlHpUEIgEfR" onclick="startCheckout('price_1TxGVZBDiYRcrvlHpUEIgEfR')" style="width:100%;padding:11px;background:var(--purple);color:#fff">Start Free Trial</button>
-      </div>
-    </div>
-    <button onclick="closeUpgradeModal()" style="background:none;border:none;color:var(--gray);font-size:14px;cursor:pointer;padding:8px">Not now</button>
-  </div>
-</div>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
