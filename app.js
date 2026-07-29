@@ -481,6 +481,7 @@ function switchTab(name) {
   if (name === 'media') renderMediaTab();
   if (name === 'schedule') { renderSchedLibrary(); loadSchedPostsList(); }
   if (name === 'analytics') renderAnalytics();
+  if (name === 'profile') loadBrandSettings();
   if (name === 'randomizer') {
     const empty = document.getElementById('spin-empty');
     const grid = document.getElementById('spin-grid');
@@ -601,10 +602,11 @@ async function callCaptionAI(imageB64, mediaType, userHint, mode, imageUrl = nul
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token;
     if (token) {
+      const brand = getBrandContext();
       const res = await fetch(`${SUPABASE_URL}/functions/v1/generate-caption`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ imageB64, imageUrl, mediaType, userHint, mode })
+        body: JSON.stringify({ imageB64, imageUrl, mediaType, userHint, mode, ...brand })
       });
       if (res.ok) {
         const d = await res.json();
@@ -1115,6 +1117,34 @@ function renderConnectedAccounts() {
       queueNotice.innerHTML = '<strong style="color:var(--success)">TikTok connected.</strong> Posts will be published automatically at your scheduled times.';
     }
   }
+}
+
+// ---- BRAND SETTINGS ----
+function saveBrandSettings() {
+  const name = document.getElementById('brand-name-input')?.value.trim() || '';
+  const niche = document.getElementById('brand-niche-input')?.value.trim() || '';
+  const voice = document.getElementById('brand-voice-input')?.value.trim() || '';
+  localStorage.setItem('pf_brand_name', name);
+  localStorage.setItem('pf_brand_niche', niche);
+  localStorage.setItem('pf_brand_voice', voice);
+  toast('Brand settings saved', 'success');
+}
+
+function loadBrandSettings() {
+  const nameEl = document.getElementById('brand-name-input');
+  const nicheEl = document.getElementById('brand-niche-input');
+  const voiceEl = document.getElementById('brand-voice-input');
+  if (nameEl) nameEl.value = localStorage.getItem('pf_brand_name') || '';
+  if (nicheEl) nicheEl.value = localStorage.getItem('pf_brand_niche') || '';
+  if (voiceEl) voiceEl.value = localStorage.getItem('pf_brand_voice') || '';
+}
+
+function getBrandContext() {
+  return {
+    brandName: localStorage.getItem('pf_brand_name') || '',
+    brandNiche: localStorage.getItem('pf_brand_niche') || '',
+    brandVoice: localStorage.getItem('pf_brand_voice') || ''
+  };
 }
 
 // ---- API KEY ----

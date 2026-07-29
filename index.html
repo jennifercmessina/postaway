@@ -1004,6 +1004,26 @@
             <span class="plan-badge" style="background: rgba(124,63,204,0.2); color: var(--accent-light); padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--border-accent);">Free Plan</span>
           </div>
         </div>
+        <!-- Brand Settings -->
+        <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
+          <div style="font-weight: 700; font-size: 1rem; margin-bottom: 4px;">Brand Settings</div>
+          <div style="font-size: 0.78rem; color: var(--text-sec); margin-bottom: 16px;">Tell the AI who you are so every caption sounds like your brand, not a generic template.</div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 0.78rem; color: var(--text-sec);">Brand Name</label>
+            <input type="text" id="brand-name-input" class="form-input" placeholder="e.g. MessinaGlam, Glow by Jade, The Skin Lab">
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 0.78rem; color: var(--text-sec);">What you do</label>
+            <input type="text" id="brand-niche-input" class="form-input" placeholder="e.g. luxury skincare, hair extensions, wellness coaching">
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label" style="font-size: 0.78rem; color: var(--text-sec);">Your vibe / tone</label>
+            <input type="text" id="brand-voice-input" class="form-input" placeholder="e.g. bold and confident, soft and feminine, educational and empowering">
+          </div>
+          <button class="btn btn-primary" style="width: 100%; font-size: 0.85rem;" onclick="saveBrandSettings()">Save Brand Settings</button>
+        </div>
+
+        <!-- Connected Accounts -->
         <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
           <div style="font-weight: 700; font-size: 1rem; margin-bottom: 14px;">Connected Accounts</div>
           <div id="ig-connect-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
@@ -1016,7 +1036,7 @@
             </div>
             <button id="ig-connect-btn" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="connectInstagram()">Connect</button>
           </div>
-          <div id="tt-connect-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0 0 0;">
+          <div id="tt-connect-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle);">
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 1.4rem;">&#127925;</span>
               <div>
@@ -1026,7 +1046,11 @@
             </div>
             <button id="tt-connect-btn" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="connectTikTok()">Connect</button>
           </div>
+          <div style="padding: 12px 0 0 0; text-align: center;">
+            <button class="btn btn-ghost" style="font-size: 0.8rem; width: 100%; color: var(--text-sec);" onclick="toast('Multiple accounts coming soon in a future update', 'info')">+ Add another account</button>
+          </div>
         </div>
+
         <div class="glass-card" style="padding: 20px; margin-bottom: 20px;">
           <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px;">Subscription</div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; margin-bottom: 16px;">
