@@ -198,7 +198,7 @@ async function initApp(isNewUser = false) {
 
   loadMediaLibrary();
   handleOAuthReturn();
-  renderConnectedAccounts();
+  await loadConnectedAccounts();
   await loadDashboard();
   await loadSubscription();
   checkUpgradePrompts();
@@ -481,7 +481,7 @@ function switchTab(name) {
   if (name === 'media') renderMediaTab();
   if (name === 'schedule') { renderSchedLibrary(); loadSchedPostsList(); }
   if (name === 'analytics') renderAnalytics();
-  if (name === 'profile') loadBrandSettings();
+  if (name === 'profile') { loadBrandSettings(); loadConnectedAccounts(); }
   if (name === 'randomizer') {
     const empty = document.getElementById('spin-empty');
     const grid = document.getElementById('spin-grid');
@@ -1081,42 +1081,116 @@ function handleOAuthReturn() {
   }
 }
 
-// ---- RENDER CONNECTED ACCOUNTS ----
+// ---- CONNECTED ACCOUNTS (multi-account) ----
+let connectedAccounts = []; // { id, platform, username, display_name, is_active }
+
+const PLATFORM_META = {
+  instagram: { label: 'Instagram', icon: '📸', color: '#E1306C' },
+  tiktok:    { label: 'TikTok',    icon: '🎵', color: '#010101' },
+  facebook:  { label: 'Facebook',  icon: '📘', color: '#1877F2' },
+  youtube:   { label: 'YouTube',   icon: '▶️',  color: '#FF0000' },
+  pinterest: { label: 'Pinterest', icon: '📌', color: '#E60023' },
+  twitter:   { label: 'X / Twitter', icon: '✖️', color: '#14171A' },
+  linkedin:  { label: 'LinkedIn',  icon: '💼', color: '#0A66C2' },
+};
+
+async function loadConnectedAccounts() {
+  if (!user) return;
+  try {
+    const { data } = await sb.from('connected_accounts').select('*').eq('user_id', user.id).order('created_at');
+    connectedAccounts = data || [];
+  } catch (_) {
+    // fallback to legacy localStorage
+    connectedAccounts = [];
+    const igU = cookieStorage.getItem('ig_username') || localStorage.getItem('ig_username');
+    if (cookieStorage.getItem('ig_connected') === 'true' || localStorage.getItem('ig_connected') === 'true') {
+      connectedAccounts.push({ id: 'legacy-ig', platform: 'instagram', username: igU || 'connected', display_name: igU, is_active: true });
+    }
+    const ttU = cookieStorage.getItem('tt_username') || localStorage.getItem('tt_username');
+    if (cookieStorage.getItem('tt_connected') === 'true' || localStorage.getItem('tt_connected') === 'true') {
+      connectedAccounts.push({ id: 'legacy-tt', platform: 'tiktok', username: ttU || 'connected', display_name: ttU, is_active: true });
+    }
+  }
+  renderConnectedAccounts();
+}
+
+async function setActiveAccount(id, platform, username) {
+  // Set all accounts on this platform to inactive, then activate the chosen one
+  if (id === 'legacy-ig' || id === 'legacy-tt') { toast('Reconnect this account to enable switching', 'info'); return; }
+  await sb.from('connected_accounts').update({ is_active: false }).eq('user_id', user.id).eq('platform', platform);
+  await sb.from('connected_accounts').update({ is_active: true }).eq('id', id);
+  await loadConnectedAccounts();
+  toast('Switched to @' + username, 'success');
+}
+
+async function disconnectAccount(id, platform, username) {
+  if (id === 'legacy-ig') { localStorage.removeItem('ig_connected'); cookieStorage.removeItem('ig_connected'); }
+  else if (id === 'legacy-tt') { localStorage.removeItem('tt_connected'); cookieStorage.removeItem('tt_connected'); }
+  else { await sb.from('connected_accounts').delete().eq('id', id); }
+  await loadConnectedAccounts();
+  toast('Disconnected @' + username, 'success');
+}
+
 function renderConnectedAccounts() {
-  const igConnected = cookieStorage.getItem('ig_connected') === 'true' || localStorage.getItem('ig_connected') === 'true';
-  const igUsername = cookieStorage.getItem('ig_username') || localStorage.getItem('ig_username');
-  const ttConnected = cookieStorage.getItem('tt_connected') === 'true' || localStorage.getItem('tt_connected') === 'true';
-  const ttUsername = cookieStorage.getItem('tt_username') || localStorage.getItem('tt_username');
+  const container = document.getElementById('accounts-list');
+  const queueNotice = document.getElementById('queue-notice');
+
+  // Legacy status elements (keep for backward compat with home screen)
+  const igAcc = connectedAccounts.find(a => a.platform === 'instagram' && a.is_active);
+  const ttAcc = connectedAccounts.find(a => a.platform === 'tiktok' && a.is_active);
 
   const igStatusEl = document.getElementById('ig-status-label');
   const igBtnEl = document.getElementById('ig-connect-btn');
   const ttStatusEl = document.getElementById('tt-status-label');
   const ttBtnEl = document.getElementById('tt-connect-btn');
-  const banner = document.getElementById('ig-banner');
-  const queueNotice = document.getElementById('queue-notice');
 
-  if (igConnected) {
-    if (igStatusEl) { igStatusEl.textContent = '@' + (igUsername || 'connected'); igStatusEl.style.color = 'var(--success)'; }
-    if (igBtnEl) { igBtnEl.textContent = 'Reconnect'; }
-    if (banner) banner.style.display = 'none';
+  if (igAcc) {
+    if (igStatusEl) { igStatusEl.textContent = '@' + igAcc.username; igStatusEl.style.color = 'var(--success)'; }
+    if (igBtnEl) igBtnEl.textContent = 'Add account';
   } else {
-    if (banner) banner.style.display = '';
+    if (igStatusEl) { igStatusEl.textContent = 'Not connected'; igStatusEl.style.color = ''; }
+    if (igBtnEl) igBtnEl.textContent = 'Connect';
   }
-
-  if (ttConnected) {
-    if (ttStatusEl) { ttStatusEl.textContent = '@' + (ttUsername || 'connected'); ttStatusEl.style.color = 'var(--success)'; }
-    if (ttBtnEl) { ttBtnEl.textContent = 'Reconnect'; }
+  if (ttAcc) {
+    if (ttStatusEl) { ttStatusEl.textContent = '@' + ttAcc.username; ttStatusEl.style.color = 'var(--success)'; }
+    if (ttBtnEl) ttBtnEl.textContent = 'Add account';
+  } else {
+    if (ttStatusEl) { ttStatusEl.textContent = 'Not connected'; ttStatusEl.style.color = ''; }
+    if (ttBtnEl) ttBtnEl.textContent = 'Connect';
   }
 
   if (queueNotice) {
-    if (igConnected && ttConnected) {
-      queueNotice.innerHTML = '<strong style="color:var(--success)">Instagram + TikTok connected.</strong> Posts will be published automatically at your scheduled times.';
-    } else if (igConnected) {
-      queueNotice.innerHTML = '<strong style="color:var(--success)">Instagram connected.</strong> Posts will be published automatically at your scheduled times.';
-    } else if (ttConnected) {
-      queueNotice.innerHTML = '<strong style="color:var(--success)">TikTok connected.</strong> Posts will be published automatically at your scheduled times.';
-    }
+    const connected = [...new Set(connectedAccounts.filter(a => a.is_active).map(a => PLATFORM_META[a.platform]?.label || a.platform))];
+    if (connected.length > 0) queueNotice.innerHTML = '<strong style="color:var(--success)">' + connected.join(' + ') + ' connected.</strong> Posts will publish automatically at your scheduled times.';
   }
+
+  // Render full accounts list in Profile
+  if (!container) return;
+  if (connectedAccounts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-sec);font-size:0.82rem;padding:16px 0;">No accounts connected yet.</div>';
+    return;
+  }
+
+  // Group by platform
+  const byPlatform = {};
+  connectedAccounts.forEach(a => { (byPlatform[a.platform] = byPlatform[a.platform] || []).push(a); });
+
+  container.innerHTML = Object.entries(byPlatform).map(([platform, accounts]) => {
+    const meta = PLATFORM_META[platform] || { label: platform, icon: '🔗', color: 'var(--primary)' };
+    return accounts.map(acc => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-subtle);">
+        <span style="font-size:1.3rem;">${meta.icon}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:0.88rem;">@${acc.username}</div>
+          <div style="font-size:0.74rem;color:${acc.is_active ? 'var(--success)' : 'var(--text-sec)'};">${meta.label} &bull; ${acc.is_active ? 'Active' : 'Inactive'}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          ${!acc.is_active ? `<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.74rem;" onclick="setActiveAccount('${acc.id}','${platform}','${acc.username}')">Use</button>` : ''}
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.74rem;color:var(--danger,#ff4d4d);" onclick="disconnectAccount('${acc.id}','${platform}','${acc.username}')">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  }).join('');
 }
 
 // ---- BRAND SETTINGS ----
