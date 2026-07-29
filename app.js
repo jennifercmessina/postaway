@@ -674,7 +674,21 @@ async function runAISingle(index, mode) {
       b64 = await fileToB64(p.file);
       mediaType = p.file.type || 'image/jpeg';
     } else if (p.uploadedUrl || p.url) {
-      imageUrl = p.uploadedUrl || p.url;
+      // Fetch image in browser (has auth context) and convert to base64
+      // so the edge function actually sees the photo
+      try {
+        const imgRes = await fetch(p.uploadedUrl || p.url);
+        if (imgRes.ok) {
+          const blob = await imgRes.blob();
+          mediaType = blob.type || 'image/jpeg';
+          b64 = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch (_) {}
+      if (!b64) imageUrl = p.uploadedUrl || p.url; // fallback
     }
 
     const userHint = document.getElementById('cap-' + index)?.value || '';
