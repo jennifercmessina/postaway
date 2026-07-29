@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - PostAway</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0a1a;
+      --surface: #1a1428;
+      --primary: #7c3fcc;
+      --gold: #c9a84c;
+      --text: #f0ecff;
+      --text-sec: rgba(240,236,255,0.6);
+      --border: rgba(255,255,255,0.08);
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; }
+    .wrap { max-width: 780px; margin: 0 auto; padding: 48px 24px 80px; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 48px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.2rem; }
+    .brand img { width: 36px; height: 36px; border-radius: 10px; }
+    h1 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+    .updated { color: var(--text-sec); font-size: 0.85rem; margin-bottom: 40px; }
+    h2 { font-size: 1.15rem; font-weight: 700; color: var(--gold); margin: 36px 0 12px; }
+    p { color: var(--text-sec); margin-bottom: 14px; }
+    ul { color: var(--text-sec); padding-left: 20px; margin-bottom: 14px; }
+    ul li { margin-bottom: 6px; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .divider { height: 1px; background: var(--border); margin: 40px 0; }
+    .contact-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 40px; }
+    .contact-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .contact-card p { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="/" class="brand">
+      <img src="logo.png" alt="PostAway Logo">
+      PostAway
+    </a>
+
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: July 29, 2026</p>
+
+    <p>PostAway ("we," "our," or "us") is a social media scheduling and automation platform operated by Messina Enterprises LLC. This Privacy Policy explains how we collect, use, and protect your information when you use PostAway at <a href="https://www.getpostaway.com">getpostaway.com</a>.</p>
+
+    <h2>1. Information We Collect</h2>
+    <p>We collect the following types of information:</p>
+    <ul>
+      <li><strong>Account information:</strong> Email address and password (stored securely via Supabase Auth) when you create an account.</li>
+      <li><strong>Social media tokens:</strong> OAuth access tokens for connected Instagram, TikTok, and Facebook accounts. These are stored encrypted in our database and used solely to publish content on your behalf.</li>
+      <li><strong>Content you upload:</strong> Photos, videos, and captions you submit for scheduling. These are stored in Supabase Storage and deleted when you remove them.</li>
+      <li><strong>Brand settings:</strong> Brand name, niche, and voice preferences you configure, stored locally in your browser.</li>
+      <li><strong>Usage data:</strong> Basic analytics such as posts scheduled, published, and failed - used to display your dashboard statistics.</li>
+    </ul>
+
+    <h2>2. How We Use Your Information</h2>
+    <ul>
+      <li>To authenticate you and manage your account</li>
+      <li>To publish posts to your connected social media accounts at your scheduled times</li>
+      <li>To generate AI-powered captions using Anthropic's Claude API (images are processed but not stored by Anthropic beyond the request)</li>
+      <li>To send email notifications about published or failed posts</li>
+      <li>To process subscription payments via Stripe</li>
+      <li>To improve and maintain the PostAway service</li>
+    </ul>
+
+    <h2>3. Instagram and Facebook Data</h2>
+    <p>When you connect your Instagram or Facebook account, we request the following permissions:</p>
+    <ul>
+      <li><strong>instagram_basic:</strong> To read your Instagram account profile and verify the connection.</li>
+      <li><strong>instagram_content_publish:</strong> To publish photos, videos, and reels to your Instagram feed on your behalf.</li>
+      <li><strong>pages_show_list:</strong> To list the Facebook Pages you manage, required by Meta to link your Instagram Business account.</li>
+      <li><strong>pages_read_engagement:</strong> To verify Page connection status.</li>
+      <li><strong>pages_manage_posts:</strong> To publish content to connected Facebook Pages.</li>
+    </ul>
+    <p>We do not sell, share, or use your Instagram or Facebook data for advertising. Access tokens are used exclusively to publish content you explicitly schedule through PostAway. You can revoke access at any time by disconnecting your account in PostAway's Profile settings or directly in your Instagram/Facebook settings.</p>
+
+    <h2>4. TikTok Data</h2>
+    <p>When you connect your TikTok account, we request permissions to upload and publish videos on your behalf. TikTok data is used only to fulfill your scheduled posts and is not shared with third parties.</p>
+
+    <h2>5. Data Sharing</h2>
+    <p>We do not sell your personal data. We share data only with the following service providers who help us operate PostAway:</p>
+    <ul>
+      <li><strong>Supabase</strong> - database, authentication, and file storage</li>
+      <li><strong>Anthropic</strong> - AI caption generation (image data is sent per-request only)</li>
+      <li><strong>Stripe</strong> - payment processing for subscriptions</li>
+      <li><strong>Meta (Instagram/Facebook)</strong> - publishing content via their API</li>
+      <li><strong>TikTok</strong> - publishing content via their API</li>
+      <li><strong>Vercel</strong> - web hosting</li>
+    </ul>
+
+    <h2>6. Data Retention</h2>
+    <p>We retain your account data and scheduled posts for as long as your account is active. You may delete your account at any time by contacting us, which will permanently remove your data within 30 days. OAuth tokens are removed immediately when you disconnect a social account.</p>
+
+    <h2>7. Security</h2>
+    <p>We use industry-standard security measures including encrypted connections (HTTPS), encrypted token storage, and row-level security on our database. No method of transmission over the internet is 100% secure, but we take all reasonable steps to protect your information.</p>
+
+    <h2>8. Children's Privacy</h2>
+    <p>PostAway is not directed to individuals under the age of 18. We do not knowingly collect personal information from minors. If you believe a minor has provided us with personal data, please contact us immediately.</p>
+
+    <h2>9. Your Rights</h2>
+    <p>Depending on your location, you may have the right to access, correct, or delete your personal data, or to object to or restrict certain processing. To exercise these rights, contact us at the address below.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by email or by posting a notice in the app. Continued use of PostAway after changes take effect constitutes acceptance of the updated policy.</p>
+
+    <div class="divider"></div>
+
+    <div class="contact-card">
+      <h3>Contact Us</h3>
+      <p>If you have questions about this Privacy Policy or how we handle your data, please contact us at:<br><br>
+      <strong>Messina Enterprises LLC</strong><br>
+      Email: <a href="mailto:hello@jennifercmessina.com">hello@jennifercmessina.com</a><br>
+      Website: <a href="https://www.getpostaway.com">getpostaway.com</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

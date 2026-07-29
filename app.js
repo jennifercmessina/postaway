@@ -1030,7 +1030,7 @@ async function doAppleLogin() {
 const CONNECT_CONFIGS = {
   instagram: {
     label: 'Instagram',
-    icon: '📸',
+    icon: PLATFORM_SVGS.instagram,
     color: '#E1306C',
     colorBg: 'var(--surface)',
     requirements: [
@@ -1055,7 +1055,7 @@ const CONNECT_CONFIGS = {
   },
   tiktok: {
     label: 'TikTok',
-    icon: '🎵',
+    icon: PLATFORM_SVGS.tiktok,
     color: '#010101',
     colorBg: 'var(--surface)',
     requirements: [
@@ -1080,10 +1080,36 @@ const CONNECT_CONFIGS = {
   }
 };
 
+CONNECT_CONFIGS.facebook = {
+  label: 'Facebook',
+  icon: PLATFORM_SVGS.facebook,
+  color: '#1877F2',
+  colorBg: 'var(--surface)',
+  requirements: [
+    { icon: '✓', text: 'A <strong>Facebook account</strong> with a Page you manage' },
+    { icon: '✓', text: 'Admin or Editor role on the <strong>Facebook Page</strong>' },
+    { icon: '✓', text: 'The Page must be <strong>published</strong> (not unpublished)' },
+  ],
+  steps: [
+    'Go to <strong>facebook.com/pages/create</strong> if you don\'t have a Page yet',
+    'Make sure you are an <strong>Admin or Editor</strong> of the Page',
+    'Return here and tap <strong>Continue to Connect</strong>',
+    'Select your Page when prompted by Facebook',
+  ],
+  doConnect() {
+    if (!user) { toast('Please sign in first', 'error'); return; }
+    const META_APP_ID = '27694391816864880';
+    const CALLBACK_URI = encodeURIComponent('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/facebook-oauth-callback');
+    const SCOPES = 'pages_show_list,pages_read_engagement,pages_manage_posts';
+    window.location.href = `https://www.facebook.com/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&state=${user.id}`;
+  }
+};
+
 let _connectPlatform = null;
 
 function connectInstagram() { showConnectModal('instagram'); }
 function connectTikTok() { showConnectModal('tiktok'); }
+function connectFacebook() { showConnectModal('facebook'); }
 
 function showConnectModal(platform) {
   if (!user) { toast('Please sign in first', 'error'); return; }
@@ -1093,7 +1119,7 @@ function showConnectModal(platform) {
 
   // Header
   document.getElementById('connect-modal-header').style.background = cfg.colorBg;
-  document.getElementById('connect-modal-icon').textContent = cfg.icon;
+  document.getElementById('connect-modal-icon').innerHTML = cfg.icon;
   document.getElementById('connect-modal-title').textContent = cfg.label;
 
   // Requirements
@@ -1173,18 +1199,36 @@ function handleOAuthReturn() {
 // ---- CONNECTED ACCOUNTS (multi-account) ----
 let connectedAccounts = []; // { id, platform, username, display_name, is_active }
 
+// SVG platform logos
+const PLATFORM_SVGS = {
+  instagram: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="ig-g1" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="5.5" fill="url(#ig-g1)"/><path d="M12 7.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2Zm0 7.9A3.1 3.1 0 1 1 12 8.9 3.1 3.1 0 0 1 12 15.1Z" fill="#fff"/><circle cx="16.9" cy="7.1" r="1.1" fill="#fff"/></svg>`,
+  tiktok: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#010101"/><path d="M19 9.1a5.3 5.3 0 0 1-3.1-1v4.6a4.3 4.3 0 1 1-4.3-4.3h.4v2.1h-.4a2.2 2.2 0 1 0 2.2 2.2V5h2.1a3.2 3.2 0 0 0 3.1 2.9v2.2Z" fill="#fff"/><path d="M18.1 8.2a5.3 5.3 0 0 1-2.2-1v4.5a4.3 4.3 0 1 1-4.3-4.2h.4V9.6h-.4a2.2 2.2 0 1 0 2.2 2.2V4h2.1a3.2 3.2 0 0 0 2.2 3v1.2Z" fill="#EE1D52"/><path d="M19 9.1a5.3 5.3 0 0 1-3.1-1v4.6a4.3 4.3 0 1 1-3.9-4.3v2.1a2.2 2.2 0 1 0 1.8 2.2V5H16a3.2 3.2 0 0 0 3 2.9V9.1Z" fill="#69C9D0"/></svg>`,
+  facebook: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#1877F2"/><path d="M16.5 8h-2.2V6.7c0-.6.4-.7.7-.7h1.5V4h-2c-2.2 0-2.7 1.6-2.7 2.7V8h-1.5v2.2h1.5V18h2.5v-7.8h1.7l.5-2.2Z" fill="#fff"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#FF0000"/><path d="M20.5 8s-.2-1.4-.8-2a2.7 2.7 0 0 0-1.9-.8C16.2 5 12 5 12 5s-4.2 0-5.8.2a2.7 2.7 0 0 0-1.9.8C3.7 6.6 3.5 8 3.5 8S3.3 9.6 3.3 11.2v1.5c0 1.5.2 3.1.2 3.1s.2 1.4.8 2a2.9 2.9 0 0 0 2 .8C7.8 18.8 12 19 12 19s4.2 0 5.8-.4a2.7 2.7 0 0 0 1.9-.8c.6-.6.8-2 .8-2s.2-1.6.2-3.1v-1.5C20.7 9.6 20.5 8 20.5 8ZM10.2 14.4V9.6l5.3 2.4-5.3 2.4Z" fill="#fff"/></svg>`,
+  pinterest: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#E60023"/><path d="M12 3.5C7.3 3.5 3.5 7.3 3.5 12c0 3.6 2.2 6.7 5.4 8-.1-.7-.1-1.8.1-2.6l1-4.4s-.3-.5-.3-1.3c0-1.2.7-2.1 1.6-2.1.8 0 1.1.6 1.1 1.3 0 .8-.5 2-.8 3.1-.2.9.5 1.7 1.4 1.7 1.7 0 2.9-1.8 2.9-4.3 0-2.3-1.6-3.8-3.9-3.8-2.7 0-4.2 2-4.2 4.1 0 .8.3 1.7.7 2.1.1.1.1.2.1.3l-.3 1.1c-.1.3-.3.4-.6.1C6.5 14.5 6 13.3 6 12c0-3.3 2.4-6.4 6.9-6.4 3.6 0 6.4 2.6 6.4 6 0 3.6-2.3 6.5-5.4 6.5-1.1 0-2.1-.6-2.4-1.2l-.7 2.5c-.2.9-.9 2.1-1.3 2.8.9.3 1.9.4 2.9.4 4.7 0 8.5-3.8 8.5-8.5S16.7 3.5 12 3.5Z" fill="#fff"/></svg>`,
+  twitter: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#000"/><path d="M13.5 10.7 18.7 5h-1.2l-4.5 5.2L9.4 5H5.2l5.5 7.9L5.2 19h1.2l4.8-5.6 3.8 5.6h4.2l-5.7-8.3Zm-1.7 2L11 11.4 6.7 5.9h1.9l3.3 4.7.8 1.1 4.6 6.5h-1.9l-3.7-5.5Z" fill="#fff"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect width="24" height="24" rx="5.5" fill="#0A66C2"/><path d="M7.5 9.5h-2v8h2v-8Zm-1-3.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4ZM18.5 13c0-2-.8-3.5-3-3.5a2.9 2.9 0 0 0-2.5 1.3V9.5h-2v8h2v-4.2c0-1.1.3-2.1 1.6-2.1 1.2 0 1.4 1.1 1.4 2.2v4.1h2V13Z" fill="#fff"/></svg>`,
+};
+
 const PLATFORM_META = {
-  instagram: { label: 'Instagram', icon: '📸', color: '#E1306C' },
-  tiktok:    { label: 'TikTok',    icon: '🎵', color: '#010101' },
-  facebook:  { label: 'Facebook',  icon: '📘', color: '#1877F2' },
-  youtube:   { label: 'YouTube',   icon: '▶️',  color: '#FF0000' },
-  pinterest: { label: 'Pinterest', icon: '📌', color: '#E60023' },
-  twitter:   { label: 'X / Twitter', icon: '✖️', color: '#14171A' },
-  linkedin:  { label: 'LinkedIn',  icon: '💼', color: '#0A66C2' },
+  instagram: { label: 'Instagram', icon: PLATFORM_SVGS.instagram, color: '#E1306C' },
+  tiktok:    { label: 'TikTok',    icon: PLATFORM_SVGS.tiktok,    color: '#010101' },
+  facebook:  { label: 'Facebook',  icon: PLATFORM_SVGS.facebook,  color: '#1877F2' },
+  youtube:   { label: 'YouTube',   icon: PLATFORM_SVGS.youtube,   color: '#FF0000' },
+  pinterest: { label: 'Pinterest', icon: PLATFORM_SVGS.pinterest, color: '#E60023' },
+  twitter:   { label: 'X / Twitter', icon: PLATFORM_SVGS.twitter, color: '#000' },
+  linkedin:  { label: 'LinkedIn',  icon: PLATFORM_SVGS.linkedin,  color: '#0A66C2' },
 };
 
 async function loadConnectedAccounts() {
   if (!user) return;
+  // Inject real SVG logos into add-account buttons
+  const igIcon = document.getElementById('ig-add-icon');
+  const ttIcon = document.getElementById('tt-add-icon');
+  const fbIcon = document.getElementById('fb-add-icon');
+  if (igIcon) igIcon.innerHTML = PLATFORM_SVGS.instagram;
+  if (ttIcon) ttIcon.innerHTML = PLATFORM_SVGS.tiktok;
+  if (fbIcon) fbIcon.innerHTML = PLATFORM_SVGS.facebook;
   try {
     const { data } = await sb.from('connected_accounts').select('*').eq('user_id', user.id).order('created_at');
     connectedAccounts = data || [];
@@ -1265,10 +1309,10 @@ function renderConnectedAccounts() {
   connectedAccounts.forEach(a => { (byPlatform[a.platform] = byPlatform[a.platform] || []).push(a); });
 
   container.innerHTML = Object.entries(byPlatform).map(([platform, accounts]) => {
-    const meta = PLATFORM_META[platform] || { label: platform, icon: '🔗', color: 'var(--primary)' };
+    const meta = PLATFORM_META[platform] || { label: platform, icon: '', color: 'var(--primary)' };
     return accounts.map(acc => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border-subtle);">
-        <span style="font-size:1.3rem;">${meta.icon}</span>
+        <div style="width:32px;height:32px;flex-shrink:0;border-radius:8px;overflow:hidden;">${meta.icon || '🔗'}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:600;font-size:0.88rem;">@${acc.username}</div>
           <div style="font-size:0.74rem;color:${acc.is_active ? 'var(--success)' : 'var(--text-sec)'};">${meta.label} &bull; ${acc.is_active ? 'Active' : 'Inactive'}</div>
