@@ -1032,7 +1032,7 @@ const CONNECT_CONFIGS = {
     label: 'Instagram',
     icon: '📸',
     color: '#E1306C',
-    colorBg: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+    colorBg: 'var(--surface)',
     requirements: [
       { icon: '✓', text: 'A <strong>Business or Creator account</strong> (not a personal account)' },
       { icon: '✓', text: 'Your Instagram <strong>linked to a Facebook Page</strong>' },
@@ -1057,7 +1057,7 @@ const CONNECT_CONFIGS = {
     label: 'TikTok',
     icon: '🎵',
     color: '#010101',
-    colorBg: 'linear-gradient(135deg, #010101, #69C9D0)',
+    colorBg: 'var(--surface)',
     requirements: [
       { icon: '✓', text: 'A <strong>TikTok account</strong> (any type - personal accounts work)' },
       { icon: '✓', text: 'Must be <strong>18 years or older</strong>' },
