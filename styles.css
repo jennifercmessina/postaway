@@ -800,15 +800,20 @@
 
     /* SPINNER */
     .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--border);
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
       border-top-color: var(--gold);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
+      animation: spin 0.65s linear infinite;
+      display: inline-flex;
+      flex-shrink: 0;
       vertical-align: middle;
+      box-sizing: border-box;
     }
+    .btn .spinner { margin-right: 8px; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -1694,15 +1699,20 @@
 
     /* SPINNER */
     .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--border);
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      min-height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
       border-top-color: var(--gold);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      display: inline-block;
+      animation: spin 0.65s linear infinite;
+      display: inline-flex;
+      flex-shrink: 0;
       vertical-align: middle;
+      box-sizing: border-box;
     }
+    .btn .spinner { margin-right: 8px; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 

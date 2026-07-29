@@ -1027,22 +1027,111 @@ async function doAppleLogin() {
 }
 
 // ---- SOCIAL CONNECT ----
-function connectInstagram() {
+const CONNECT_CONFIGS = {
+  instagram: {
+    label: 'Instagram',
+    icon: '📸',
+    color: '#E1306C',
+    colorBg: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+    requirements: [
+      { icon: '✓', text: 'A <strong>Business or Creator account</strong> (not a personal account)' },
+      { icon: '✓', text: 'Your Instagram <strong>linked to a Facebook Page</strong>' },
+      { icon: '✓', text: 'Admin access to that Facebook Page' },
+    ],
+    steps: [
+      'Open Instagram and go to your <strong>Profile</strong>',
+      'Tap the menu (&#9776;) then <strong>Settings and privacy</strong>',
+      'Tap <strong>Account type and tools</strong>',
+      'Tap <strong>Switch to Professional Account</strong> and choose <strong>Business</strong>',
+      'Follow the prompts to link your <strong>Facebook Page</strong>',
+    ],
+    doConnect() {
+      if (!user) { toast('Please sign in first', 'error'); return; }
+      const META_APP_ID = '27694391816864880';
+      const CALLBACK_URI = encodeURIComponent('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/instagram-oauth-callback');
+      const SCOPES = 'instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement';
+      window.location.href = `https://www.facebook.com/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&state=${user.id}`;
+    }
+  },
+  tiktok: {
+    label: 'TikTok',
+    icon: '🎵',
+    color: '#010101',
+    colorBg: 'linear-gradient(135deg, #010101, #69C9D0)',
+    requirements: [
+      { icon: '✓', text: 'A <strong>TikTok account</strong> (any type - personal accounts work)' },
+      { icon: '✓', text: 'Must be <strong>18 years or older</strong>' },
+      { icon: '✓', text: 'App permissions to <strong>upload and publish videos</strong>' },
+    ],
+    steps: [
+      'Open TikTok and go to your <strong>Profile</strong>',
+      'Tap the menu (&#9776;) then <strong>Settings and Privacy</strong>',
+      'Tap <strong>Account</strong> then <strong>Switch to Business Account</strong>',
+      'Choose a category that fits your content',
+      'Return here and tap <strong>Continue to Connect</strong>',
+    ],
+    doConnect() {
+      if (!user) { toast('Please sign in first', 'error'); return; }
+      const CLIENT_KEY = 'awhyljrxgkpuyg5r';
+      const CALLBACK_URI = encodeURIComponent('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/tiktok-oauth-callback');
+      const SCOPES = encodeURIComponent('user.info.basic,video.publish,video.upload');
+      window.location.href = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&response_type=code&state=${user.id}`;
+    }
+  }
+};
+
+let _connectPlatform = null;
+
+function connectInstagram() { showConnectModal('instagram'); }
+function connectTikTok() { showConnectModal('tiktok'); }
+
+function showConnectModal(platform) {
   if (!user) { toast('Please sign in first', 'error'); return; }
-  const META_APP_ID = '27694391816864880';
-  const CALLBACK_URI = encodeURIComponent('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/instagram-oauth-callback');
-  const SCOPES = 'instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement';
-  const url = `https://www.facebook.com/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&state=${user.id}`;
-  window.location.href = url;
+  _connectPlatform = platform;
+  const cfg = CONNECT_CONFIGS[platform];
+  if (!cfg) return;
+
+  // Header
+  document.getElementById('connect-modal-header').style.background = cfg.colorBg;
+  document.getElementById('connect-modal-icon').textContent = cfg.icon;
+  document.getElementById('connect-modal-title').textContent = cfg.label;
+
+  // Requirements
+  const reqEl = document.getElementById('connect-modal-reqs');
+  reqEl.innerHTML = cfg.requirements.map(r =>
+    `<div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="width:20px;height:20px;min-width:20px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;margin-top:1px;">${r.icon}</span>
+      <span style="font-size:0.88rem;line-height:1.5;">${r.text}</span>
+    </div>`
+  ).join('');
+
+  // Steps
+  const stepsEl = document.getElementById('connect-modal-steps');
+  stepsEl.innerHTML = cfg.steps.map((s, i) =>
+    `<div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:800;margin-top:1px;">${i + 1}</span>
+      <span style="font-size:0.86rem;line-height:1.5;color:var(--text-sec);">${s}</span>
+    </div>`
+  ).join('');
+
+  // Button
+  document.getElementById('connect-modal-btn').textContent = `Continue to Connect ${cfg.label}`;
+
+  document.getElementById('connect-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 
-function connectTikTok() {
-  if (!user) { toast('Please sign in first', 'error'); return; }
-  const CLIENT_KEY = 'awhyljrxgkpuyg5r';
-  const CALLBACK_URI = encodeURIComponent('https://aajkbqmzuqfzzugjmerp.supabase.co/functions/v1/tiktok-oauth-callback');
-  const SCOPES = encodeURIComponent('user.info.basic,video.publish,video.upload');
-  const url = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&redirect_uri=${CALLBACK_URI}&scope=${SCOPES}&response_type=code&state=${user.id}`;
-  window.location.href = url;
+function closeConnectModal() {
+  document.getElementById('connect-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  _connectPlatform = null;
+}
+
+function confirmConnect() {
+  const cfg = _connectPlatform && CONNECT_CONFIGS[_connectPlatform];
+  if (!cfg) return;
+  closeConnectModal();
+  cfg.doConnect();
 }
 
 // ---- HANDLE OAUTH RETURN ----
