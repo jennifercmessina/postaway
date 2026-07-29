@@ -669,30 +669,57 @@ async function runAISingle(index, mode) {
   if (card) card.querySelectorAll('button').forEach(b => b.disabled = true);
 
   try {
-    let b64 = null, mediaType = 'image/jpeg', imageUrl = null;
-    if (p.file) {
-      b64 = await fileToB64(p.file);
-      mediaType = p.file.type || 'image/jpeg';
-    } else if (p.uploadedUrl || p.url) {
-      // Fetch image in browser (has auth context) and convert to base64
-      // so the edge function actually sees the photo
-      try {
-        const imgRes = await fetch(p.uploadedUrl || p.url);
-        if (imgRes.ok) {
-          const blob = await imgRes.blob();
-          mediaType = blob.type || 'image/jpeg';
-          b64 = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-          });
-        }
-      } catch (_) {}
-      if (!b64) imageUrl = p.uploadedUrl || p.url; // fallback
+    let b64 = null, mediaType = 'image/jpeg';
+    const isVideo = (p.file && p.file.type.startsWith('video/')) ||
+                    (!p.file && (p.url || p.uploadedUrl || '').match(/\.(mp4|mov|avi|webm|hevc)/i));
+
+    if (!isVideo) {
+      // Get an object URL to draw on canvas regardless of source
+      let srcUrl = null;
+      let ownedUrl = false;
+      if (p.file) {
+        srcUrl = URL.createObjectURL(p.file);
+        ownedUrl = true;
+      } else if (p.uploadedUrl || p.url) {
+        try {
+          const imgRes = await fetch(p.uploadedUrl || p.url);
+          if (imgRes.ok) {
+            const blob = await imgRes.blob();
+            srcUrl = URL.createObjectURL(blob);
+            ownedUrl = true;
+          }
+        } catch (_) {}
+        if (!srcUrl) srcUrl = p.uploadedUrl || p.url;
+      }
+
+      if (srcUrl) {
+        // Draw through canvas: normalizes HEIC, resizes to 1024px max, outputs JPEG
+        b64 = await new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const MAX = 1024;
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (w > MAX || h > MAX) {
+              if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            if (ownedUrl) URL.revokeObjectURL(srcUrl);
+            resolve(canvas.toDataURL('image/jpeg', 0.88).split(',')[1]);
+          };
+          img.onerror = () => { if (ownedUrl) URL.revokeObjectURL(srcUrl); resolve(null); };
+          img.src = srcUrl;
+        });
+        mediaType = 'image/jpeg';
+      }
     }
 
     const userHint = document.getElementById('cap-' + index)?.value || '';
-    const txt = await callCaptionAI(b64, mediaType, userHint, mode, imageUrl);
+    const txt = await callCaptionAI(b64, mediaType, userHint, mode, null);
     if (txt) {
       parseCaptionAIResponse(txt, index);
       toast('Caption generated', 'success');
