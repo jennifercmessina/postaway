@@ -1169,6 +1169,9 @@ function handleOAuthReturn() {
   const ttConnected = params.get('tt_connected');
   const ttUser = params.get('tt_user');
   const ttError = params.get('tt_error');
+  const fbConnected = params.get('fb_connected');
+  const fbPage = params.get('fb_page');
+  const fbError = params.get('fb_error');
 
   if (igConnected === 'true') {
     cookieStorage.setItem('ig_connected', 'true');
@@ -1193,6 +1196,19 @@ function handleOAuthReturn() {
   if (ttError) {
     window.history.replaceState({}, '', window.location.pathname);
     toast('TikTok connection failed: ' + ttError, 'error');
+  }
+  if (fbConnected === 'true') {
+    window.history.replaceState({}, '', window.location.pathname);
+    const pageName = fbPage ? decodeURIComponent(fbPage) : 'your Page';
+    toast('Facebook Page "' + pageName + '" connected!', 'success');
+    loadConnectedAccounts();
+  }
+  if (fbError) {
+    window.history.replaceState({}, '', window.location.pathname);
+    const msg = fbError === 'no_pages_found'
+      ? 'No Facebook Pages found. Make sure you manage at least one Page.'
+      : 'Facebook connection failed: ' + fbError;
+    toast(msg, 'error');
   }
 }
 
